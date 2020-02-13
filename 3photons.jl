@@ -74,6 +74,7 @@ end
 
 "Constructor that loads the simulation configuration from a file"
 function Configuration(file_name::AbstractString)
+    # Open the config file
     open(file_name) do config_file
         # Iterate over the config file's lines, extracting the first chunk
         # of non-whitespace on each line (if any) and skipping empty lines.
@@ -91,4 +92,4 @@ function Configuration(file_name::AbstractString)
 end
 
 # DEBUG
-config = Configuration("valeurs")
+cfg = Configuration("valeurs")
