@@ -1,4 +1,4 @@
-# This file depends on numeric.jl being include-d beforehand
+# Depends on numeric.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 

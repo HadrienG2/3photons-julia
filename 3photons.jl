@@ -7,14 +7,17 @@
 # FIXME: This manual dependency tracking is incredibly ugly, and I'm very
 #        surprised that I apparently need to engage in it. Investigate if Julia
 #        truly doesn't provide any better way to organize source code.
-include("numeric.jl")   # Leaf of the dependency tree
+include("errors.jl")    # No dependency
+include("numeric.jl")   # No dependency
 include("evcut.jl")     # Depends on: numeric.jl
-include("config.jl")    # Directly used, depends on: evcut.jl, numeric.jl
-include("coupling.jl")  # Directly used, depends on: config.jl, numeric.jl
+include("config.jl")    # Used, depends on: errors.jl, evcut.jl, numeric.jl
+include("event.jl")     # Used, depends on: errors.jl, numeric.jl
+include("coupling.jl")  # Used, depends on: config.jl, numeric.jl
 
 
 using .Config: Configuration
 using .Coupling: Couplings
+using .Event: EventGenerator
 
 
 # === CONFIGURATION READOUT ===
@@ -39,6 +42,9 @@ start_time_s = time()
 
 # Compute physical couplings
 couplings = Couplings(cfg)
+
+# Initialize the event generator
+evgen = EventGenerator(cfg.e_tot)
 
 # TODO: Finish translating the program
 #

@@ -1,4 +1,4 @@
-# This file depends on evcut.jl and numeric.jl being include-d beforehand
+# Depends on errors.jl, evcut.jl and numeric.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -6,9 +6,9 @@
 "Mechanism for loading and sharing the simulation configuration"
 module Config
 
-# FIXME: Reconsider the need for this dependency
 import IterTools
 
+using ..Errors: @enforce
 using ..EvCut: EventCut
 using ..Numeric: Float
 
@@ -132,18 +132,14 @@ function Configuration(file_name::AbstractString)
         print(config)
 
         # A sensible simulation must run for at least one event
-        if config.num_events == 0
-            throw(DomainError(config.num_events, "Invalid event count"))
-        end
+        @enforce (config.num_events > 0) "Invalid event count"
 
         # We don't support the original code's PAW-based plotting features, so
         # we make sure that they weren't enabled.
         #
         # FIXME: Consider enabling some plotting in the Julia version later.
         #
-        if config.plot
-            throw(DomainError(config.plot, "Plotting is not supported"))
-        end
+        @enforce (!config.plot) "Plotting is not supported"
 
         # We don't support the initial code's debugging feature which displays
         # all intermediary results during sampling. Such a feature should be set
@@ -152,14 +148,11 @@ function Configuration(file_name::AbstractString)
         # FIXME: Revise this design decision for the Julia version. There is no
         #        compile time versus run-time distinction here.
         #
-        if config.impr
-            throw(DomainError(config.impr, """
-                              Individual result printing is not supported. 
-                              This debugging feature has a run-time 
-                              performance cost even when unused. It should be 
-                              implemented at compile-time instead.
-                              """))
-        end
+        @enforce (!config.impr) """
+        Individual result printing is not supported.
+        This debugging feature has a run-time performance cost even when unused.
+        It should be implemented at compile-time instead.
+        """
 
         # We're done checking the conifguration and can return it
         config
