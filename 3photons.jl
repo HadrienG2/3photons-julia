@@ -1,9 +1,3 @@
-# NOTE: Run with julia --project=. 3photons.jl to load proper packages
-#
-# FIXME: There has to be a better way. If there isn't, replace usage of
-#        IterTools with eager collection usage, it's not that important.
-
-
 # FIXME: This manual dependency tracking is incredibly ugly, and I'm very
 #        surprised that I apparently need to engage in it. Investigate if Julia
 #        truly doesn't provide any better way to organize source code.
