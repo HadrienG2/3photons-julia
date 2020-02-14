@@ -60,6 +60,7 @@ struct Configuration
     plot::Bool
 end
 
+
 "Constructor that loads the simulation configuration from a file"
 function Configuration(file_name::AbstractString)
     # Open the config file
@@ -161,6 +162,7 @@ function Configuration(file_name::AbstractString)
         config
     end
 end
+
 
 "Display the configuration, following formatting of the original 3photons code"
 function print(c::Configuration)
