@@ -3,14 +3,44 @@
 # FIXME: There has to be a better way. If there isn't, replace usage of
 #        IterTools with eager collection usage, it's not that important.
 
-# TODO: After translating, turns this into more idiomatic Julia (e.g. unicode
-#       variable names, more genericity...
 
+# FIXME: This manual dependency tracking is incredibly ugly, and I'm very
+#        surprised that I apparently need to engage in it. Investigate if Julia
+#        truly doesn't provide any better way to organize source code.
+include("numeric.jl")   # Leaf of the dependency tree
+include("evcut.jl")     # Depends on: numeric.jl
+include("config.jl")    # Directly used, depends on: evcut.jl, numeric.jl
+include("coupling.jl")  # Directly used, depends on: config.jl, numeric.jl
 
-include("config.jl")
 
 using .Config: Configuration
+using .Coupling: Couplings
 
+
+# === CONFIGURATION READOUT ===
 
 # Load the configuration from its file
 cfg = Configuration("valeurs")
+
+# === SIMULATION INITIALIZATION ===
+
+# Record when the simulation started
+#
+# NOTE: Unlike the C++ version, we do this after loading the configuration file,
+#       which reduces IO-induced timing fluctuations.
+#
+start_time_s = time()
+
+# NOTE: Removed final particle mass array. Since we are simulating photons, we
+#       know that all masses will be zero.
+
+# NOTE: Deleted the original WTEV value. In the C++ code, it was overwritten by
+#       the first RAMBO call w/o having ever been read!
+
+# Compute physical couplings
+couplings = Couplings(cfg)
+
+# TODO: Finish translating the program
+#
+# TODO: After translating, turns this into more idiomatic Julia (e.g. unicode
+#       variable names, more genericity...

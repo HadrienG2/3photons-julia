@@ -1,3 +1,8 @@
+# This file doesn't depend on any other file
+#
+# FIXME: Isn't there a way to spell this out in code???
+
+
 "Basic numerical concepts used throughout the program"
 module Numeric
 

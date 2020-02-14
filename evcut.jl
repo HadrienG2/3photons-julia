@@ -1,9 +1,12 @@
+# This file depends on numeric.jl being include-d beforehand
+#
+# FIXME: Isn't there a way to spell this out in code???
+
+
 "Mechanism to apply a cut to generated events"
 module EvCut
 
-include("numeric.jl")
-
-using .Numeric: Float
+using ..Numeric: Float
 
 export EventCut
 

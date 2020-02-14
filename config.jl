@@ -1,13 +1,16 @@
+# This file depends on evcut.jl and numeric.jl being include-d beforehand
+#
+# FIXME: Isn't there a way to spell this out in code???
+
+
 "Mechanism for loading and sharing the simulation configuration"
 module Config
 
-include("evcut.jl")
-include("numeric.jl")
-
+# FIXME: Reconsider the need for this dependency
 import IterTools
 
-using .EvCut: EventCut
-using .Numeric: Float
+using ..EvCut: EventCut
+using ..Numeric: Float
 
 export Configuration
 
@@ -67,7 +70,7 @@ function Configuration(file_name::AbstractString)
     open(file_name) do config_file
         # Parse a config file entry, given its type
         function parse_entry(ty::DataType, field::AbstractString)
-            # 3photons's config file uses a weird (Fortran?) syntax for booleans
+            # 3photons's config file uses an unusual syntax for booleans
             if ty == Bool
                 # Special-case this boolean syntax
                 if field == ".true."
@@ -166,24 +169,24 @@ end
 
 "Display the configuration, following formatting of the original 3photons code"
 function print(c::Configuration)
-    println("ITOT           : ", c.num_events);
-    println("ETOT           : ", c.e_tot);
-    println("oCutpar.ACUT   : ", c.event_cut.a_cut);
-    println("oCutpar.BCUT   : ", c.event_cut.b_cut);
-    println("oCutpar.EMIN   : ", c.event_cut.e_min);
-    println("oCutpar.SINCUT : ", c.event_cut.sin_cut);
-    println("ALPHA          : ", c.alpha);
-    println("ALPHAZ         : ", c.alpha_z);
-    println("CONVERS        : ", c.convers);
-    println("oParam.MZ0     : ", c.m_z0);
-    println("oParam.GZ0     : ", c.g_z0);
-    println("SIN2W          : ", c.sin2_w);
-    println("BREPEM         : ", c.br_ep_em);
-    println("BETAPLUS       : ", c.beta_plus);
-    println("BETAMOINS      : ", c.beta_minus);
-    println("NBIN           : ", c.n_bin);
-    println("oParam.IMPR    : ", c.impr);
-    println("PLOT           : ", c.plot);
+    println("ITOT           : ", c.num_events)
+    println("ETOT           : ", c.e_tot)
+    println("oCutpar.ACUT   : ", c.event_cut.a_cut)
+    println("oCutpar.BCUT   : ", c.event_cut.b_cut)
+    println("oCutpar.EMIN   : ", c.event_cut.e_min)
+    println("oCutpar.SINCUT : ", c.event_cut.sin_cut)
+    println("ALPHA          : ", c.alpha)
+    println("ALPHAZ         : ", c.alpha_z)
+    println("CONVERS        : ", c.convers)
+    println("oParam.MZ0     : ", c.m_z0)
+    println("oParam.GZ0     : ", c.g_z0)
+    println("SIN2W          : ", c.sin2_w)
+    println("BREPEM         : ", c.br_ep_em)
+    println("BETAPLUS       : ", c.beta_plus)
+    println("BETAMOINS      : ", c.beta_minus)
+    println("NBIN           : ", c.n_bin)
+    println("oParam.IMPR    : ", c.impr)
+    println("PLOT           : ", c.plot)
 end
 
 end
