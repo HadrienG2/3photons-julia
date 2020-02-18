@@ -1,4 +1,4 @@
-# Depends on errors.jl, evcut.jl and numeric.jl being include-d beforehand
+# Depends on Errors.jl, EvCut.jl and Numeric.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 

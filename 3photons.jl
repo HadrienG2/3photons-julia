@@ -1,21 +1,21 @@
 # FIXME: This manual dependency tracking is incredibly ugly, and I'm very
 #        surprised that I apparently need to engage in it. Investigate if Julia
 #        truly doesn't provide any better way to organize source code.
-include("errors.jl")    # No dependency
-include("numeric.jl")   # No dependency
-include("evcut.jl")     # Depends on: numeric.jl
-include("rescont.jl")   # Depends on: numeric.jl
-include("config.jl")    # Used, depends on: errors.jl, evcut.jl, numeric.jl
-include("coupling.jl")  # Used, depends on: config.jl, numeric.jl
-include("event.jl")     # Used, depends on: errors.jl, numeric.jl
-include("random.jl")    # Used, no dependency
-include("resfin.jl")    # Used, depends on: config.jl, event.jl, numeric.jl,
-                        #                   rescont.jl
+include("Errors.jl")    # No dependency
+include("Numeric.jl")   # No dependency
+include("EvCut.jl")     # Depends on: Numeric.jl
+include("ResCont.jl")   # Depends on: Numeric.jl
+include("Config.jl")    # Used, depends on: Errors.jl, EvCut.jl, Numeric.jl
+include("Coupling.jl")  # Used, depends on: Config.jl, Numeric.jl
+include("Random.jl")    # Used, no dependency
+include("EvGen.jl")     # Used, depends on: Errors.jl, Numeric.jl, Random.jl
+include("ResFin.jl")    # Used, depends on: Config.jl, EvGen.jl, Numeric.jl,
+                        #                   ResCont.jl
 
 
 using .Config: Configuration
 using .Coupling: Couplings
-using .Event: EventGenerator
+using .EvGen: EventGenerator, generate_event!
 using .Random: RandomGenerator
 using .ResFin: ResultsBuilder
 
@@ -60,6 +60,9 @@ function simulate_events(num_events::UInt, rng::RandomGenerator)::ResultsBuilder
 
     # Simulate the requested number of events
     for _ = 1:num_events
+        # Generate an event
+        event = generate_event!(rng, evgen)
+
         # TODO: Not implemented yet
         throw(AssertionError("Not implemented yet"))
     end

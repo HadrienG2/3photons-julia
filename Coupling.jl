@@ -1,4 +1,4 @@
-# Depends on config.jl and numeric.jl being include-d beforehand
+# Depends on Config.jl and Numeric.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 

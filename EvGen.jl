@@ -1,13 +1,14 @@
-# Depends on errors.jl and numeric.jl being include-d beforehand
+# Depends on Errors.jl, Numeric.jl and Random.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
 
 "Event generation and storage"
-module Event
+module EvGen
 
 using ..Errors: @enforce
 using ..Numeric: Float
+using ..Random: RandomGenerator
 using StaticArrays: SMatrix, @SMatrix
 
 export EventGenerator
@@ -19,6 +20,9 @@ const INCOMING_COUNT = 2
 "Number of outgoing particles (replaces original INP)"
 const OUTGOING_COUNT = 3
 
+"Number of particles in an event"
+const PARTICLE_COUNT = INCOMING_COUNT + OUTGOING_COUNT
+
 
 "Generator of ee -> ppp events"
 struct EventGenerator
@@ -29,9 +33,19 @@ struct EventGenerator
     event_weight::Float
 
     "Incoming electron and positron momenta"
-    incoming_momenta::SMatrix{4, INCOMING_COUNT, Float}
+    incoming_momenta::SMatrix{INCOMING_COUNT, 4, Float}
 end
 
+
+"""
+Storage for ee -> ppp event data
+
+Encapsulates a vector of incoming and outgoing 4-momenta.
+"""
+const Event = SMatrix{PARTICLE_COUNT, 4, Float}
+
+
+# === CONSTRUCTION ===
 
 """
 Initialize event generation for a center-of-mass energy of e_tot.
@@ -67,10 +81,8 @@ function EventGenerator(e_tot::Real)
 
     # Compute the incoming particle momenta
     half_e_tot = e_tot / 2
-    incoming_momenta = @SMatrix [ -half_e_tot half_e_tot ;
-                                   0          0          ;
-                                   0          0          ;
-                                   half_e_tot half_e_tot ]
+    incoming_momenta = @SMatrix [ -half_e_tot 0. 0. half_e_tot ;
+                                   half_e_tot 0. 0. half_e_tot ]
 
     # Construct and return the output data structure
     EventGenerator(
@@ -78,6 +90,23 @@ function EventGenerator(e_tot::Real)
         event_weight,
         incoming_momenta,
     )
+end
+
+
+# === EVENT GENERATION ===
+
+"""
+Use a highly specialized version of the RAMBO (RAndom Momenta
+Beautifully Organized) algorithm from S.D. Ellis, R. Kleiss and W.J.
+Stirling to generate the 4-momenta of the three outgoing photons.
+
+All events have the same weight, it can be queried via evgen.event_weight.
+
+The 4-momenta of output photons are sorted by decreasing energy.
+"""
+function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
+    # TODO: Not implemented yet
+    throw(AssertionError("Not implemented yet"))
 end
 
 end

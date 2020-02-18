@@ -1,4 +1,4 @@
-# Depends on config.jl, event.jl, numeric.jl and rescont.jl being include-d
+# Depends on Config.jl, EvGen.jl, Numeric.jl and ResCont.jl being include-d
 # beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
@@ -11,7 +11,7 @@ the final results: differential cross-section, sum & variance.
 module ResFin
 
 using ..Config: Configuration
-using ..Event: OUTGOING_COUNT
+using ..EvGen: OUTGOING_COUNT
 using ..Numeric: Float
 using ..ResCont: NUM_RESULTS, ResultVector
 
