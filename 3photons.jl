@@ -8,6 +8,7 @@ include("rescont.jl")   # Depends on: numeric.jl
 include("config.jl")    # Used, depends on: errors.jl, evcut.jl, numeric.jl
 include("coupling.jl")  # Used, depends on: config.jl, numeric.jl
 include("event.jl")     # Used, depends on: errors.jl, numeric.jl
+include("random.jl")    # Used, no dependency
 include("resfin.jl")    # Used, depends on: config.jl, event.jl, numeric.jl,
                         #                   rescont.jl
 
@@ -15,6 +16,7 @@ include("resfin.jl")    # Used, depends on: config.jl, event.jl, numeric.jl,
 using .Config: Configuration
 using .Coupling: Couplings
 using .Event: EventGenerator
+using .Random: RandomGenerator
 using .ResFin: ResultsBuilder
 
 
@@ -52,20 +54,22 @@ evgen = EventGenerator(cfg.e_tot)
 This kernel simulates a number of events, given an initial random number
 generator state, and return the accumulated intermediary results.
 """
-function simulate_events(num_events::UInt, rng)::ResultsBuilder # TODO: Type rng
+function simulate_events(num_events::UInt, rng::RandomGenerator)::ResultsBuilder
     # Setup a results accumulator
     res_builder = ResultsBuilder(cfg, evgen.event_weight)
 
-    # TODO: Not implemented yet
-    throw(AssertionError("Not implemented yet"))
+    # Simulate the requested number of events
+    for _ = 1:num_events
+        # TODO: Not implemented yet
+        throw(AssertionError("Not implemented yet"))
+    end
 
     # Return the accumulated results
     res_builder
 end
 
-# TODO: Fix with actual RNG once we have that
 # TODO: Replace with actual execution once we have that
-simulate_events(cfg.num_events, 42)
+simulate_events(cfg.num_events, RandomGenerator())
 
 
 # TODO: Finish translating the program
