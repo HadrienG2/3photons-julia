@@ -11,7 +11,7 @@ using ..Numeric: Float
 using ..Random: RandomGenerator
 using StaticArrays: SMatrix, @SMatrix
 
-export EventGenerator
+export EventGenerator, generate_event!
 
 
 "Number of incoming particles"
