@@ -26,10 +26,10 @@ struct EventGenerator
     e_tot::Float
 
     "Weight of generated events"
-    ev_weight::Float
+    event_weight::Float
 
     "Incoming electron and positron momenta"
-    incoming_momenta::SMatrix{4, 2, Float}
+    incoming_momenta::SMatrix{4, INCOMING_COUNT, Float}
 end
 
 
@@ -63,7 +63,7 @@ function EventGenerator(e_tot::Real)
     # All generated events will have the same weight: pre-compute it
     ln_weight = (2 * OUTGOING_COUNT - 4) * log(e_tot) + z
     @enforce (ln_weight >= -180 && ln_weight < 174)
-    ev_weight = exp(ln_weight)
+    event_weight = exp(ln_weight)
 
     # Compute the incoming particle momenta
     half_e_tot = e_tot / 2
@@ -75,7 +75,7 @@ function EventGenerator(e_tot::Real)
     # Construct and return the output data structure
     EventGenerator(
         e_tot,
-        ev_weight,
+        event_weight,
         incoming_momenta,
     )
 end

@@ -4,20 +4,25 @@
 include("errors.jl")    # No dependency
 include("numeric.jl")   # No dependency
 include("evcut.jl")     # Depends on: numeric.jl
+include("rescont.jl")   # Depends on: numeric.jl
 include("config.jl")    # Used, depends on: errors.jl, evcut.jl, numeric.jl
-include("event.jl")     # Used, depends on: errors.jl, numeric.jl
 include("coupling.jl")  # Used, depends on: config.jl, numeric.jl
+include("event.jl")     # Used, depends on: errors.jl, numeric.jl
+include("resfin.jl")    # Used, depends on: config.jl, event.jl, numeric.jl,
+                        #                   rescont.jl
 
 
 using .Config: Configuration
 using .Coupling: Couplings
 using .Event: EventGenerator
+using .ResFin: ResultsBuilder
 
 
 # === CONFIGURATION READOUT ===
 
 # Load the configuration from its file
 cfg = Configuration("valeurs")
+
 
 # === SIMULATION INITIALIZATION ===
 
@@ -40,7 +45,31 @@ couplings = Couplings(cfg)
 # Initialize the event generator
 evgen = EventGenerator(cfg.e_tot)
 
+
+# === SIMULATION EXECUTION ===
+
+"""
+This kernel simulates a number of events, given an initial random number
+generator state, and return the accumulated intermediary results.
+"""
+function simulate_events(num_events::UInt, rng)::ResultsBuilder # TODO: Type rng
+    # Setup a results accumulator
+    res_builder = ResultsBuilder(cfg, evgen.event_weight)
+
+    # TODO: Not implemented yet
+    throw(AssertionError("Not implemented yet"))
+
+    # Return the accumulated results
+    res_builder
+end
+
+# TODO: Fix with actual RNG once we have that
+# TODO: Replace with actual execution once we have that
+simulate_events(cfg.num_events, 42)
+
+
 # TODO: Finish translating the program
 #
 # TODO: After translating, turns this into more idiomatic Julia (e.g. unicode
 #       variable names, more genericity...
+throw(AssertionError("Not implemented yet"))
