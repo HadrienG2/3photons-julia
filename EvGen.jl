@@ -11,7 +11,8 @@ using ..Errors: @enforce
 using ..LinAlg: X, Y, Z, E
 using ..Numeric: Float
 using ..Random: RandomGenerator, random!
-using StaticArrays: SMatrix, @SMatrix
+using LinearAlgebra: dot
+using StaticArrays: SMatrix, SVector, @SMatrix, @SVector
 
 export EventGenerator, generate_event!
 
@@ -144,7 +145,7 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, OUTGOING_COUNT, F
             else
                 throw(AssertionError("Unexpected coordinate"))
             end
-        for coord=1:4, par=1:3
+        for coord=1:4, par=1:OUTGOING_COUNT
     ]
 end
 
@@ -169,6 +170,13 @@ The 4-momenta of output photons are sorted by decreasing energy.
 function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
     # Generate massless outgoing momenta in infinite phase space
     q = generate_event_raw!(rng)
+
+    # Calculate the parameters of the conformal transformation
+    r = @SVector [ sum(q[coord, :]) for coord=1:4 ]
+    r_norm_2 = r[E]^2 - dot(r[X:Z], r[X:Z])  # FIXME: No squared norm?
+    alpha = evgen.e_tot / r_norm_2
+    r_norm = sqrt(r_norm_2)
+    beta = 1 / (r_norm + r[E])
 
     # TODO: Not implemented yet
     throw(AssertionError("Not implemented yet"))
