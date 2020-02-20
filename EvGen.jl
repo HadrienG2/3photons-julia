@@ -1,4 +1,5 @@
-# Depends on Errors.jl, Numeric.jl and Random.jl being include-d beforehand
+# Depends on Errors.jl, LinAlg.jl, Numeric.jl and Random.jl being include-d
+# beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -7,8 +8,9 @@
 module EvGen
 
 using ..Errors: @enforce
+using ..LinAlg: X, Y, Z, E
 using ..Numeric: Float
-using ..Random: RandomGenerator
+using ..Random: RandomGenerator, random!
 using StaticArrays: SMatrix, @SMatrix
 
 export EventGenerator, generate_event!
@@ -35,14 +37,6 @@ struct EventGenerator
     "Incoming electron and positron momenta"
     incoming_momenta::SMatrix{INCOMING_COUNT, 4, Float}
 end
-
-
-"""
-Storage for ee -> ppp event data
-
-Encapsulates a vector of incoming and outgoing 4-momenta.
-"""
-const Event = SMatrix{PARTICLE_COUNT, 4, Float}
 
 
 # === CONSTRUCTION ===
@@ -96,6 +90,74 @@ end
 # === EVENT GENERATION ===
 
 """
+Generate massless outgoing 4-momenta in infinite phase space
+
+The output momenta are provided as a matrix where rows are 4-momentum
+components (Px, Py, Pz, E) and columns are particles.
+"""
+function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, OUTGOING_COUNT, Float}
+    # Must be generalized to support OUTGOING_COUNT != 3
+    @enforce (OUTGOING_COUNT == 3) "This function assumes 3 outgoing particles"
+
+    # This implementation targets maximal reproducibility with respect to the
+    # original 3photons program, at the expense of performance.
+    #
+    # TODO: Provide and expose a port of Rust version's faster-evgen impl'
+
+    # Generate the basic random parameters of the particles
+    # (This code is convoluted because it replicates the RNG call order of the
+    # original 3photons program, which itself isn't so straightforward)
+    cos_theta_idx = 1
+    phi_idx = 2
+    exp_min_e_idx = 3
+    params = @SMatrix [
+        if coord == cos_theta_idx
+            2 * random!(rng) - 1
+        elseif coord == phi_idx
+            2π * random!(rng)
+        elseif coord == exp_min_e_idx
+            random!(rng) * random!(rng)
+        else
+            throw(AssertionError("Unexpected coordinate"))
+        end
+        for coord=1:3, _par=1:OUTGOING_COUNT
+    ]
+    cos_theta = params[cos_theta_idx, :]
+    phi = params[phi_idx, :]
+    exp_min_e = params[exp_min_e_idx, :]
+
+    # Compute the outgoing momenta
+    cos_phi = map(cos, phi)
+    sin_phi = map(sin, phi)
+    sin_theta = map(c -> sqrt(1 - c*c), cos_theta)
+    energy = map(e_me -> -log(e_me + eps(Float)), exp_min_e)
+    @SMatrix [
+        energy[par] *
+            if coord == X
+                sin_theta[par] * sin_phi[par]
+            elseif coord == Y
+                sin_theta[par] * cos_phi[par]
+            elseif coord == Z
+                cos_theta[par]
+            elseif coord == E
+                1
+            else
+                throw(AssertionError("Unexpected coordinate"))
+            end
+        for coord=1:4, par=1:3
+    ]
+end
+
+
+"""
+Storage for ee -> ppp event data
+
+Encapsulates a vector of incoming and outgoing 4-momenta.
+"""
+const Event = SMatrix{PARTICLE_COUNT, 4, Float}
+
+
+"""
 Use a highly specialized version of the RAMBO (RAndom Momenta
 Beautifully Organized) algorithm from S.D. Ellis, R. Kleiss and W.J.
 Stirling to generate the 4-momenta of the three outgoing photons.
@@ -105,6 +167,9 @@ All events have the same weight, it can be queried via evgen.event_weight.
 The 4-momenta of output photons are sorted by decreasing energy.
 """
 function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
+    # Generate massless outgoing momenta in infinite phase space
+    q = generate_event_raw!(rng)
+
     # TODO: Not implemented yet
     throw(AssertionError("Not implemented yet"))
 end

@@ -1,4 +1,4 @@
-# No include dependency
+# Depends on Errors.jl and Numeric.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -9,9 +9,11 @@ number generator or the "rand" crate that is the Rust standard for RNGs.
 """
 module Random
 
-using StaticArrays: MVector
+using ..Errors: @enforce
+using ..Numeric: Float
+using StaticArrays: MVector, SVector, @SVector
 
-export RandomGenerator
+export RandomGenerator, random!
 
 
 # Generated random numbers will have a granularity of 1/MODULO
@@ -21,7 +23,7 @@ const INV_MODULO = 1 / MODULO
 
 
 "Random number generator, from Knuth's ranf (in Seminumerical Algorithm)"
-struct RanfGenerator
+mutable struct RanfGenerator
     "Seed which this generator was initialized with"
     seed::Integer
 
@@ -52,6 +54,37 @@ function reset!(rng::RanfGenerator)
             rng.numbers[i] += MODULO
         end
     end
+end
+
+
+"Generate a vector of random numbers"
+function random_vector!(rng::RanfGenerator, N::Int)::SVector{N, Float}
+    # Assuming that we will never need more than a round of numbers at a time
+    # allows us to take implementation and performance shortcuts.
+    round_size = length(rng.numbers) - 1
+    @enforce (N < round_size) """
+    Current algorithm only supports emitting a round of numbers at a time
+    """
+
+    # In principle, we could reuse the remaining numbers in the active round, in
+    # practice it costs more than it helps...
+    if rng.index < N
+        reset!(rng)
+        rng.index = round_size + 1
+    end
+
+    # ...so it's best to generate all the numbers in one go
+    rng.index -= N
+    map(x -> x*INV_MODULO, rng.numbers[(rng.index+1):(rng.index+N)])
+end
+
+
+"""
+Generate a random number between 0 and 1, with INV_MODULO granularity
+Roughly maps to the RN() method in the original code.
+"""
+function random!(rng::RanfGenerator)::Float
+    random_vector!(rng, 1)[1]
 end
 
 

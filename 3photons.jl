@@ -2,13 +2,15 @@
 #        surprised that I apparently need to engage in it. Investigate if Julia
 #        truly doesn't provide any better way to organize source code.
 include("Errors.jl")    # No dependency
+include("LinAlg.jl")    # No dependency
 include("Numeric.jl")   # No dependency
 include("EvCut.jl")     # Depends on: Numeric.jl
 include("ResCont.jl")   # Depends on: Numeric.jl
 include("Config.jl")    # Used, depends on: Errors.jl, EvCut.jl, Numeric.jl
 include("Coupling.jl")  # Used, depends on: Config.jl, Numeric.jl
-include("Random.jl")    # Used, no dependency
-include("EvGen.jl")     # Used, depends on: Errors.jl, Numeric.jl, Random.jl
+include("Random.jl")    # Used, depends on: Errors.jl, Numeric.jl
+include("EvGen.jl")     # Used, depends on: Errors.jl, LinAlg.jl, Numeric.jl,
+                        #                   Random.jl
 include("ResFin.jl")    # Used, depends on: Config.jl, EvGen.jl, Numeric.jl,
                         #                   ResCont.jl
 
