@@ -103,7 +103,7 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, OUTGOING_COUNT, F
     # This implementation targets maximal reproducibility with respect to the
     # original 3photons program, at the expense of performance.
     #
-    # TODO: Provide and expose a port of Rust version's faster-evgen impl'
+    # FIXME: Provide and expose a port of Rust version's faster-evgen impl'
 
     # Generate the basic random parameters of the particles
     # (This code is convoluted because it replicates the RNG call order of the
