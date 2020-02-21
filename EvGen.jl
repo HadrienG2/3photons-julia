@@ -14,7 +14,8 @@ using ..Random: RandomGenerator, random!
 using LinearAlgebra: dot
 using StaticArrays: MMatrix, MVector, SMatrix, SVector, @SMatrix, @SVector
 
-export EventGenerator, generate_event!
+export EventGenerator, electron_momentum, generate_event!, outgoing_momenta,
+       min_photon_energy
 
 
 "Number of incoming particles"
@@ -48,7 +49,7 @@ Initialize event generation for a center-of-mass energy of e_tot.
 Combines former functionality of ppp constructor and IBEGIN-based lazy
 initialization from the original C++ 3photons code.
 """
-function EventGenerator(e_tot::Real)
+function EventGenerator(e_tot::Float)
     # Check on the number of particles. The check for N<101 is gone since unlike
     # the original RAMBO, we don't use arrays of hardcoded size.
     @enforce (OUTGOING_COUNT > 1)
@@ -85,6 +86,45 @@ function EventGenerator(e_tot::Real)
         event_weight,
         incoming_momenta,
     )
+end
+
+
+# === GENERATED EVENTS ===
+
+"Row of the incoming electron in the event data matrix"
+const INCOMING_E_M = 1
+
+"Index of the first outgoing photon in the 4-momentup array"
+const OUTGOING_SHIFT = 3
+
+
+"""
+Storage for ee -> ppp event data
+
+Encapsulates a vector of incoming and outgoing 4-momenta.
+"""
+const Event = SMatrix{PARTICLE_COUNT, 4, Float}
+
+
+"Extract the electron 4-momentum"
+function electron_momentum(event::Event)::SVector{4, Float}
+    event[INCOMING_E_M, :]
+end
+
+
+"Access the outgoing 4-momenta"
+function outgoing_momenta(event::Event)::SMatrix{OUTGOING_COUNT, 4, Float}
+    event[OUTGOING_SHIFT:PARTICLE_COUNT, :]
+end
+
+
+"Minimal outgoing photon energy"
+function min_photon_energy(event::Event)::Float
+    # Use the fact that photons are sorted by decreasing energy
+    #
+    # FIXME: Revise this code once option to disable sorting returns.
+    #
+    outgoing_momenta(event)[OUTGOING_COUNT, E]
 end
 
 
@@ -148,14 +188,6 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, OUTGOING_COUNT, F
         for coord=1:4, par=1:OUTGOING_COUNT
     ]
 end
-
-
-"""
-Storage for ee -> ppp event data
-
-Encapsulates a vector of incoming and outgoing 4-momenta.
-"""
-const Event = SMatrix{PARTICLE_COUNT, 4, Float}
 
 
 """
