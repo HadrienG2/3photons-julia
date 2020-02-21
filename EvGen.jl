@@ -12,7 +12,7 @@ using ..LinAlg: X, Y, Z, E
 using ..Numeric: Float
 using ..Random: RandomGenerator, random!
 using LinearAlgebra: dot
-using StaticArrays: SMatrix, SVector, @SMatrix, @SVector
+using StaticArrays: MMatrix, MVector, SMatrix, SVector, @SMatrix, @SVector
 
 export EventGenerator, generate_event!
 
@@ -173,13 +173,45 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
 
     # Calculate the parameters of the conformal transformation
     r = @SVector [ sum(q[coord, :]) for coord=1:4 ]
-    r_norm_2 = r[E]^2 - dot(r[X:Z], r[X:Z])  # FIXME: No squared norm?
-    alpha = evgen.e_tot / r_norm_2
+    r_norm_2 = r[E]^2 - dot(r[X:Z], r[X:Z])  # FIXME: No squared norm func?
+    α = evgen.e_tot / r_norm_2
     r_norm = sqrt(r_norm_2)
-    beta = 1 / (r_norm + r[E])
+    β = 1 / (r_norm + r[E])
 
-    # TODO: Not implemented yet
-    throw(AssertionError("Not implemented yet"))
+    # Perform the conformal transformation from Q's to output 4-momenta
+    tr_q = transpose(q)
+    rq = tr_q[:, X:Z] * r[X:Z]
+    p_e = MVector{OUTGOING_COUNT}(α * (r[E] * tr_q[:, E] - rq))
+    b_rq_e = β * rq - tr_q[:, E]
+    p_xyz = MMatrix{OUTGOING_COUNT, 3}(
+        α * (r_norm * tr_q[:, X:Z] + b_rq_e * transpose(r[X:Z]))
+    )
+
+    # Sort the output 4-momenta in order of decreasing energy
+    #
+    # FIXME: Make this optional, as in Rust version
+    #
+    for par1=1:OUTGOING_COUNT, par2=par1+1:OUTGOING_COUNT
+        if p_e[par2] > p_e[par1]
+            p_e[par1], p_e[par2] = p_e[par2], p_e[par1]
+            p_xyz[par1, :], p_xyz[par2, :] = p_xyz[par2, :], p_xyz[par1, :]
+        end
+    end
+
+    # Build the final event: incoming momenta + output 4-momenta
+    @enforce (PARTICLE_COUNT == 5) "This part assumes 5-particles events"
+    @SMatrix [
+        if par <= INCOMING_COUNT
+            evgen.incoming_momenta[par, coord]
+        elseif coord <= Z
+            p_xyz[par - INCOMING_COUNT, coord]
+        elseif coord == E
+            p_e[par - INCOMING_COUNT]
+        else
+            throw(AssertionError("Unexpected coordinate"))
+        end
+        for coord=1:4, par=1:PARTICLE_COUNT
+    ]
 end
 
 end
