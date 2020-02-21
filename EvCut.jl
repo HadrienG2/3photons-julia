@@ -1,4 +1,5 @@
-# Depends on EvGen.jl, LinAlg.jl and Numeric.jl being include-d beforehand
+# Depends on Errors.jl, EvGen.jl, LinAlg.jl and Numeric.jl being include-d
+# beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -6,11 +7,12 @@
 "Mechanism to apply a cut to generated events"
 module EvCut
 
+using ..Errors: @enforce
 using ..EvGen: electron_momentum, Event, OUTGOING_COUNT, outgoing_momenta,
                min_photon_energy
-using ..LinAlg: X, Z, E
+using ..LinAlg: XYZ, E
 using ..Numeric: Float
-using LinearAlgebra: dot
+using LinearAlgebra: cross, dot, norm
 
 export EventCut, keep_event
 
@@ -43,7 +45,7 @@ function keep_event(cut::EventCut, event::Event)::Bool
     ps_out = outgoing_momenta(event)
 
     # Check if the (beam, photon) angles pass the cut
-    cos_nums = ps_out[:, X:Z] * p_el[X:Z]
+    cos_nums = ps_out[:, XYZ] * p_el[XYZ]
     cos_denoms = ps_out[E] * p_el[E]
     for (num, denom) ∈ zip(cos_nums, cos_denoms)
         if abs(num) > cut.a_cut * denom
@@ -55,15 +57,29 @@ function keep_event(cut::EventCut, event::Event)::Bool
     for ph1=1:OUTGOING_COUNT, ph2=ph1+1:OUTGOING_COUNT
         p_ph1 = ps_out[ph1, :]
         p_ph2 = ps_out[ph2, :]
-        cos_num = dot(p_ph1[X:Z], p_ph2[X:Z])
+        cos_num = dot(p_ph1[XYZ], p_ph2[XYZ])
         cos_denom = p_ph1[E] * p_ph2[E]
         if cos_num > cut.b_cut * cos_denom
             return false
         end
     end
 
-    # TODO: Not implemented yet
-    throw(AssertionError("Not implemented yet"))
+    # Compute a vector which is normal to the outgoing photon plane
+    # NOTE: This notion is only valid because we have three output photons
+    @enforce (OUTGOING_COUNT == 3) "This part assumes 3 outgoing particles"
+    n_ppp = cross(ps_out[1, XYZ], ps_out[2, XYZ])
+
+    # Compute the cosine of the angle between the beam and this vector
+    cos_num = dot(p_el[XYZ], n_ppp)
+    cos_denom = p_el[E] * norm(n_ppp)
+
+    # Check if the (beam, normal to photon plane) angle passes the cut
+    if abs(cos_num) < cut.sin_cut * cos_denom
+        return false
+    end
+
+    # If all checks passed, we're good
+    true
 end
 
 end

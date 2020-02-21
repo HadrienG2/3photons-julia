@@ -6,7 +6,9 @@
 "Common linear algebra declarations, e.g. 4-momentum handling logic"
 module LinAlg
 
-export X, Y, Z, E
+using StaticArrays: SVector
+
+export X, XYZ, Y, Z, E
 
 
 "X impulsion of a 4-momentum"
@@ -20,5 +22,8 @@ const Z = 3
 
 "Energy of a 4-momentum"
 const E = 4
+
+"Helper for efficiently slicing the spatial part of a 4-momentum"
+const XYZ = SVector{3}(X:Z)
 
 end

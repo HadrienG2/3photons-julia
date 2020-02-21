@@ -8,7 +8,7 @@
 module EvGen
 
 using ..Errors: @enforce
-using ..LinAlg: X, Y, Z, E
+using ..LinAlg: X, Y, Z, XYZ, E
 using ..Numeric: Float
 using ..Random: RandomGenerator, random!
 using LinearAlgebra: dot
@@ -94,9 +94,6 @@ end
 "Row of the incoming electron in the event data matrix"
 const INCOMING_E_M = 1
 
-"Index of the first outgoing photon in the 4-momentup array"
-const OUTGOING_SHIFT = 3
-
 
 """
 Storage for ee -> ppp event data
@@ -114,7 +111,8 @@ end
 
 "Access the outgoing 4-momenta"
 function outgoing_momenta(event::Event)::SMatrix{OUTGOING_COUNT, 4, Float}
-    event[OUTGOING_SHIFT:PARTICLE_COUNT, :]
+    OUTGOING = SVector{OUTGOING_COUNT}(INCOMING_COUNT+1:PARTICLE_COUNT)
+    event[OUTGOING, :]
 end
 
 
@@ -205,18 +203,22 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
 
     # Calculate the parameters of the conformal transformation
     r = @SVector [ sum(q[coord, :]) for coord=1:4 ]
-    r_norm_2 = r[E]^2 - dot(r[X:Z], r[X:Z])  # FIXME: No squared norm func?
+    r_norm_2 = r[E]^2 - dot(r[XYZ], r[XYZ])  # FIXME: No squared norm func?
     α = evgen.e_tot / r_norm_2
     r_norm = sqrt(r_norm_2)
     β = 1 / (r_norm + r[E])
 
     # Perform the conformal transformation from Q's to output 4-momenta
+    #
+    # FIXME: Switch to SVector in no-photon-sorting mode, once added, as that
+    #        will rid us of a few remaining heap allocations.
+    #
     tr_q = transpose(q)
-    rq = tr_q[:, X:Z] * r[X:Z]
+    rq = tr_q[:, XYZ] * r[XYZ]
     p_e = MVector{OUTGOING_COUNT}(α * (r[E] * tr_q[:, E] - rq))
     b_rq_e = β * rq - tr_q[:, E]
     p_xyz = MMatrix{OUTGOING_COUNT, 3}(
-        α * (r_norm * tr_q[:, X:Z] + b_rq_e * transpose(r[X:Z]))
+        α * (r_norm * tr_q[:, XYZ] + b_rq_e * transpose(r[XYZ]))
     )
 
     # Sort the output 4-momenta in order of decreasing energy
@@ -231,19 +233,10 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
     end
 
     # Build the final event: incoming momenta + output 4-momenta
-    @enforce (PARTICLE_COUNT == 5) "This part assumes 5-particles events"
-    @SMatrix [
-        if par <= INCOMING_COUNT
-            evgen.incoming_momenta[par, coord]
-        elseif coord <= Z
-            p_xyz[par - INCOMING_COUNT, coord]
-        elseif coord == E
-            p_e[par - INCOMING_COUNT]
-        else
-            throw(AssertionError("Unexpected coordinate"))
-        end
-        for coord=1:4, par=1:PARTICLE_COUNT
-    ]
+    #
+    # DEBUG: Discuss why this allocates with StaticArrays devs.
+    #
+    vcat(evgen.incoming_momenta, hcat(p_xyz, p_e))
 end
 
 end

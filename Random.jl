@@ -58,7 +58,7 @@ end
 
 
 "Generate a vector of random numbers"
-function random_vector!(rng::RanfGenerator, N::Int)::SVector{N, Float}
+function random_vector!(rng::RanfGenerator, ::Val{N})::SVector{N, Float} where N
     # Assuming that we will never need more than a round of numbers at a time
     # allows us to take implementation and performance shortcuts.
     round_size = length(rng.numbers) - 1
@@ -75,7 +75,8 @@ function random_vector!(rng::RanfGenerator, N::Int)::SVector{N, Float}
 
     # ...so it's best to generate all the numbers in one go
     rng.index -= N
-    map(x -> x*INV_MODULO, rng.numbers[(rng.index+1):(rng.index+N)])
+    indices = SVector{N, Int}((rng.index+1):(rng.index+N))
+    map(x -> x*INV_MODULO, rng.numbers[indices])
 end
 
 
@@ -84,7 +85,7 @@ Generate a random number between 0 and 1, with INV_MODULO granularity
 Roughly maps to the RN() method in the original code.
 """
 function random!(rng::RanfGenerator)::Float
-    random_vector!(rng, 1)[1]
+    random_vector!(rng, Val(1))[1]
 end
 
 

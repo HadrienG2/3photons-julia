@@ -8,7 +8,7 @@ include("ResCont.jl")   # Depends on: Numeric.jl
 include("Random.jl")    # Used, depends on: Errors.jl, Numeric.jl
 include("EvGen.jl")     # Used, depends on: Errors.jl, LinAlg.jl, Numeric.jl,
                         #                   Random.jl
-include("EvCut.jl")     # Depends on: EvGen.jl, LinAlg.jl, Numeric.jl
+include("EvCut.jl")     # Depends on: Errors.jl, EvGen.jl, LinAlg.jl, Numeric.jl
 include("Config.jl")    # Used, depends on: Errors.jl, EvCut.jl, Numeric.jl
 include("Coupling.jl")  # Used, depends on: Config.jl, Numeric.jl
 include("ResFin.jl")    # Used, depends on: Config.jl, EvGen.jl, Numeric.jl,
@@ -62,6 +62,9 @@ function simulate_events(num_events::UInt, rng::RandomGenerator)::ResultsBuilder
     res_builder = ResultsBuilder(cfg, evgen.event_weight)
 
     # Simulate the requested number of events
+    #
+    # DEBUG: If that seems stuck, try @time for allocations profiling...
+    #
     for _ = 1:num_events
         # Generate an event
         event = generate_event!(rng, evgen)
