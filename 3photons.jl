@@ -98,7 +98,7 @@ function main()
     # TODO: Replace with actual execution schedule once we have that
     simulate_events(UInt(1), RandomGenerator())  # Keep JIT out of the profile
     @profile @time simulate_events(cfg.num_events, RandomGenerator())
-    Profile.print(mincount=350, noisefloor=2.0, sortedby=:count)
+    Profile.print(mincount=140, noisefloor=1.0)
 
 
     # TODO: Finish translating the program
