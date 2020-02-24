@@ -27,16 +27,16 @@ end
 
 "Fill in the parameters using data from the configuration file"
 function Couplings(cfg::Configuration)
-    e2 = 4 * π * cfg.alpha
-    e2_z = 4 * π * cfg.alpha_z
+    e2 = 4π * cfg.alpha
+    e2_z = 4π * cfg.alpha_z
     cos2_w = 1. - cfg.sin2_w
-    g_beta = -sqrt(e2_z / (4 * cos2_w * cfg.sin2_w)) / cfg.m_z0 ^ 4
+    g_beta = -√(e2_z / (4 * cos2_w * cfg.sin2_w)) / cfg.m_z0^4
 
     # FIXME: Isn't there any way to say which field we are talking about?
     Couplings(
-        -(sqrt(e2)^3),  # g_a
-        g_beta,         # g_bp
-        g_beta,         # g_bm
+        -√e2^3,  # g_a
+        g_beta,  # g_bp
+        g_beta,  # g_bm
     )
 end
 

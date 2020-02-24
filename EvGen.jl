@@ -11,7 +11,7 @@ using ..Errors: @enforce
 using ..LinAlg: X, Y, Z, XYZ, E
 using ..Numeric: Float
 using ..Random: RandomGenerator, random!
-using LinearAlgebra: dot
+using LinearAlgebra: ⋅
 using StaticArrays: MMatrix, MVector, SMatrix, SVector, @SMatrix, @SVector
 
 export EventGenerator, electron_momentum, generate_event!, outgoing_momenta,
@@ -154,7 +154,7 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Flo
     exp_min_e_idx = 3
     params = @SMatrix [
         if coord == cos_theta_idx
-            2 * random!(rng) - 1
+            2*random!(rng) - 1
         elseif coord == phi_idx
             2π * random!(rng)
         elseif coord == exp_min_e_idx
@@ -171,7 +171,7 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Flo
     # Compute the outgoing momenta
     cos_phi = map(cos, phi)
     sin_phi = map(sin, phi)
-    sin_theta = map(c -> sqrt(1 - c*c), cos_theta)
+    sin_theta = map(c -> √(1 - c^2), cos_theta)
     energy = map(e_me -> -log(e_me + eps(Float)), exp_min_e)
     @SMatrix [
         energy[par] *
@@ -206,9 +206,9 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
 
     # Calculate the parameters of the conformal transformation
     r = @SVector [ sum(q[coord, :]) for coord=1:4 ]
-    r_norm_2 = r[E]^2 - dot(r[XYZ], r[XYZ])  # FIXME: No squared norm func?
+    r_norm_2 = r[E]^2 - r[XYZ]⋅r[XYZ]  # FIXME: No squared norm func?
     α = evgen.e_tot / r_norm_2
-    r_norm = sqrt(r_norm_2)
+    r_norm = √r_norm_2
     β = 1 / (r_norm + r[E])
 
     # Perform the conformal transformation from Q's to output 4-momenta

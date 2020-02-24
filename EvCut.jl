@@ -12,7 +12,7 @@ using ..EvGen: electron_momentum, Event, NUM_OUTGOING, outgoing_momenta,
                min_photon_energy
 using ..LinAlg: XYZ, E
 using ..Numeric: Float
-using LinearAlgebra: cross, dot, norm
+using LinearAlgebra: ×, ⋅, norm
 
 export EventCut, keep_event
 
@@ -57,7 +57,7 @@ function keep_event(cut::EventCut, event::Event)::Bool
     for ph1=1:NUM_OUTGOING, ph2=ph1+1:NUM_OUTGOING
         p_ph1 = ps_out[ph1, :]
         p_ph2 = ps_out[ph2, :]
-        cos_num = dot(p_ph1[XYZ], p_ph2[XYZ])
+        cos_num = p_ph1[XYZ] ⋅ p_ph2[XYZ]
         cos_denom = p_ph1[E] * p_ph2[E]
         if cos_num > cut.b_cut * cos_denom
             return false
@@ -67,10 +67,10 @@ function keep_event(cut::EventCut, event::Event)::Bool
     # Compute a vector which is normal to the outgoing photon plane
     # NOTE: This notion is only valid because we have three output photons
     @enforce (NUM_OUTGOING == 3) "This part assumes 3 outgoing particles"
-    n_ppp = cross(ps_out[1, XYZ], ps_out[2, XYZ])
+    n_ppp = ps_out[1, XYZ] × ps_out[2, XYZ]
 
     # Compute the cosine of the angle between the beam and this vector
-    cos_num = dot(p_el[XYZ], n_ppp)
+    cos_num = p_el[XYZ] ⋅ n_ppp
     cos_denom = p_el[E] * norm(n_ppp)
 
     # Check if the (beam, normal to photon plane) angle passes the cut
