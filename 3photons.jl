@@ -94,7 +94,7 @@ function main()
     end
 
     # TODO: Replace with actual execution once we have that
-    simulate_events(cfg.num_events, RandomGenerator())
+    @time simulate_events(cfg.num_events, RandomGenerator())
 
 
     # TODO: Finish translating the program
