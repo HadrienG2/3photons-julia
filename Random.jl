@@ -76,7 +76,7 @@ function random_vector!(rng::RanfGenerator, ::Val{N})::SVector{N, Float} where N
     # ...so it's best to generate all the numbers in one go
     rng.index -= N
     indices = SVector{N, Int}((rng.index+1):(rng.index+N))
-    map(x -> x*INV_MODULO, rng.numbers[indices])
+    rng.numbers[indices] .* INV_MODULO
 end
 
 

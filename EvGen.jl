@@ -97,6 +97,9 @@ end
 "Row of the incoming electron in the event data matrix"
 const INCOMING_E_M = 1
 
+"Row of the incoming positron in the event data matrix"
+const INCOMING_E_P = 2
+
 
 """
 Storage for ee -> ppp event data
@@ -149,13 +152,13 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Flo
     # Generate the basic random parameters of the particles
     # (This code is convoluted because it replicates the RNG call order of the
     # original 3photons program, which itself isn't so straightforward)
-    cos_theta_idx = 1
-    phi_idx = 2
+    cos_θ_idx = 1
+    φ_idx = 2
     exp_min_e_idx = 3
     params = @SMatrix [
-        if coord == cos_theta_idx
+        if coord == cos_θ_idx
             2*random!(rng) - 1
-        elseif coord == phi_idx
+        elseif coord == φ_idx
             2π * random!(rng)
         elseif coord == exp_min_e_idx
             random!(rng) * random!(rng)
@@ -164,23 +167,23 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Flo
         end
         for coord=1:3, _par=1:NUM_OUTGOING
     ]
-    cos_theta = params[cos_theta_idx, :]
-    phi = params[phi_idx, :]
+    cos_θ = params[cos_θ_idx, :]
+    φ = params[φ_idx, :]
     exp_min_e = params[exp_min_e_idx, :]
 
     # Compute the outgoing momenta
-    cos_phi = map(cos, phi)
-    sin_phi = map(sin, phi)
-    sin_theta = map(c -> √(1 - c^2), cos_theta)
-    energy = map(e_me -> -log(e_me + eps(Float)), exp_min_e)
+    cos_φ = cos.(φ)
+    sin_φ = sin.(φ)
+    sin_θ = sqrt.(1 .- cos_θ.^2)
+    energy = -log.(exp_min_e .+ eps(Float))
     @SMatrix [
         energy[par] *
             if coord == X
-                sin_theta[par] * sin_phi[par]
+                sin_θ[par] * sin_φ[par]
             elseif coord == Y
-                sin_theta[par] * cos_phi[par]
+                sin_θ[par] * cos_φ[par]
             elseif coord == Z
-                cos_theta[par]
+                cos_θ[par]
             elseif coord == E
                 1
             else

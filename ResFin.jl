@@ -71,20 +71,20 @@ end
 function ResultsBuilder(cfg::Configuration, event_weight::Float)
     # Common factor (see definition and remarks above)
     fact_com = 1 / 6 * cfg.convers
-    gzr = cfg.g_z0 / cfg.m_z0
+    gzr = cfg.g_Z⁰ / cfg.m_Z⁰
 
     # Sum over polarisations factors
     p_aa = 2.
-    p_ab = 1 - 4 * cfg.sin2_w
-    p_bb = p_ab + 8 * cfg.sin2_w^2
+    p_ab = 1 - 4 * cfg.sin²_w
+    p_bb = p_ab + 8 * cfg.sin²_w^2
 
     # Homogeneity coefficient
     c_aa = fact_com * p_aa
-    c_ab = fact_com * p_ab / cfg.m_z0^2
-    c_bb = fact_com * p_bb / cfg.m_z0^4
+    c_ab = fact_com * p_ab / cfg.m_Z⁰^2
+    c_bb = fact_com * p_bb / cfg.m_Z⁰^4
 
     # Switch to dimensionless variable
-    dzeta = (cfg.e_tot / cfg.m_z0)^2
+    dzeta = (cfg.e_tot / cfg.m_Z⁰)^2
     ecart_pic = (dzeta - 1) / gzr
     propag = 1 / (1 + ecart_pic^2)
 
@@ -98,11 +98,11 @@ function ResultsBuilder(cfg::Configuration, event_weight::Float)
     com_contrib = norm_weight / 4
     aa_contrib = com_contrib * c_aa
     bb_contrib = com_contrib * c_bb * propag / gzr^2
-    ab_contrib = com_contrib * c_ab * 2 * cfg.beta_plus * propag / gzr
+    ab_contrib = com_contrib * c_ab * 2 * cfg.𝛽₊ * propag / gzr
     sigma_contribs = ResultVector(
         aa_contrib,
-        bb_contrib * cfg.beta_plus^2,
-        bb_contrib * cfg.beta_minus^2,
+        bb_contrib * cfg.𝛽₊^2,
+        bb_contrib * cfg.𝛽₋^2,
         ab_contrib * ecart_pic,
         -ab_contrib,
     )

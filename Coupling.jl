@@ -15,28 +15,28 @@ export Couplings
 "Set of physical couplings"
 struct Couplings
     "Standard Model contribution electromagnetic coupling √(4𝜋𝛼)³"
-    g_a::Float
+    g_𝛼::Float
 
     "𝛽₊ anomalous contribution electroweak coupling"
-    g_bp::Float
+    g_𝛽₊::Float
 
     "𝛽₋ anomalous contribution electroweak coupling"
-    g_bm::Float
+    g_𝛽₋::Float
 end
 
 
 "Fill in the parameters using data from the configuration file"
 function Couplings(cfg::Configuration)
-    e2 = 4π * cfg.alpha
-    e2_z = 4π * cfg.alpha_z
-    cos2_w = 1. - cfg.sin2_w
-    g_beta = -√(e2_z / (4 * cos2_w * cfg.sin2_w)) / cfg.m_z0^4
+    e² = 4π * cfg.𝛼
+    e²_Z = 4π * cfg.𝛼_Z
+    cos²_w = 1. - cfg.sin²_w
+    g_𝛽 = -√(e²_Z / (4 * cos²_w * cfg.sin²_w)) / cfg.m_Z⁰^4
 
     # FIXME: Isn't there any way to say which field we are talking about?
     Couplings(
-        -√e2^3,  # g_a
-        g_beta,  # g_bp
-        g_beta,  # g_bm
+        -√e²^3,  # g_𝛼
+        g_𝛽,     # g_𝛽₊
+        g_𝛽,     # g_𝛽₋
     )
 end
 

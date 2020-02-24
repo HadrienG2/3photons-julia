@@ -11,7 +11,8 @@ using ..Coupling: Couplings
 using ..Errors: @enforce
 using ..EvGen: Event, NUM_OUTGOING
 using ..Numeric: Float
-using ..Spinor: NUM_HELICITIES, SpinorProducts
+using ..Spinor: 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, MMM, NUM_HELICITIES, PhotonHelicities,
+                PPP, SpinorProducts
 using StaticArrays: SMatrix, SVector
 
 export NUM_RESULTS, ResultContibution, ResultVector
@@ -36,6 +37,13 @@ function ResultContribution(couplings::Couplings, event::Event)
 
     # Compute spinor inner products
     spinor = SpinorProducts(event)
+
+    # Compute the helicity amplitudes, formerly known as a, b_p and b_m, for
+    # each possible output spin configuration
+    hels = PhotonHelicities.(SVector{NUM_HELICITIES}(0b000:0b111))
+    𝛼_amps = map(hel-> 𝛼_amp(spinor, hel) * couplings.g_𝛼, hels)
+    𝛽₊_amps = map(hel -> 𝛽₊_amp(spinor, hel) * couplings.g_𝛽₊, hels)
+    𝛽₋_amps = map(hel -> 𝛽₋_amp(spinor, hel) * couplings.g_𝛽₋, hels)
 
     # TODO: Not implemented yet
     throw(AssertionError("Not implemented yet"))

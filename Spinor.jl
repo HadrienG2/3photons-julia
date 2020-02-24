@@ -8,12 +8,13 @@
 module Spinor
 
 using ..Errors: @enforce
-using ..EvGen: Event, NUM_INCOMING, NUM_OUTGOING, NUM_PARTICLES, NUM_SPINS
+using ..EvGen: Event, INCOMING_E_M, INCOMING_E_P, NUM_INCOMING, NUM_OUTGOING,
+               NUM_PARTICLES, NUM_SPINS
 using ..LinAlg: E, X, Y, Z
 using ..Numeric: Float
 using StaticArrays: SMatrix, SVector, @SMatrix, @SVector
 
-export NUM_HELICITIES, SpinorProducts
+export 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, NUM_HELICITIES, SpinorProducts
 
 
 # PhotonHelicities declaration and SpinorProducts methods are very specific to
@@ -23,8 +24,27 @@ This code assumes two incoming particles and three outgoing photons
 """
 
 
+"Output photon helicities (M is - and P is +)"
+@enum PhotonHelicities begin
+    MMM = 0b000
+    MMP = 0b001
+    MPM = 0b010
+    MPP = 0b011
+    PMM = 0b100
+    PMP = 0b101
+    PPM = 0b110
+    PPP = 0b111
+end
+
+"Number of photon helicity configurations"
+const NUM_HELICITIES = NUM_SPINS^NUM_OUTGOING
+
+
 "Massless 4-momenta spinor inner products"
 const SpinorProducts = SMatrix{NUM_PARTICLES, NUM_PARTICLES, Complex{Float}}
+
+
+# === CONSTRUCTION ===
 
 "Build spinor products from previously generated particle 4-momenta"
 function SpinorProducts(event::Event)
@@ -49,19 +69,130 @@ function SpinorProducts(event::Event)
 end
 
 
-"Output photon helicities (M is - and P is +)"
-@enum PhotonHelicities begin
-    MMM = 0b000
-    MMP = 0b001
-    MPM = 0b010
-    MPP = 0b011
-    PMM = 0b100
-    PMP = 0b101
-    PPM = 0b110
-    PPP = 0b111
+# === GRAM MATRIX ACCESSORS ===
+
+function s(sx::SpinorProducts, i::Int, j::Int)::Complex
+    sx[i, j]
 end
 
-"Number of photon helicity configurations"
-const NUM_HELICITIES = NUM_OUTGOING^NUM_SPINS
+function t(sx::SpinorProducts, i::Int, j::Int)::Complex
+    -conj(sx[i, j])
+end
+
+
+# === AMPLITUDE COMPUTATIONS ===
+
+# Internal computations from specific helicity configurations + indices
+
+const E_M = INCOMING_E_M
+const E_P = INCOMING_E_P
+
+"Standard amplitude for helicities ++-"
+function 𝛼_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+    -√8 * s(sx, E_M, E_P) * s(sx, E_M, k3)^2 /
+        (s(sx, E_M, k1) * s(sx, E_M, k2) * s(sx, E_P, k1) * s(sx, E_P, k2))
+end
+
+"Standard amplitude for helicities +--"
+function 𝛼_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+    -√8 * t(sx, E_M, E_P) * t(sx, E_P, k1)^2 /
+        (t(sx, E_P, k2) * t(sx, E_P, k3) * t(sx, E_M, k2) * t(sx, E_M, k3))
+end
+
+"Anomalous amplitude 𝛽₊ for helicities ++-"
+function 𝛽₊_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+    -√8 * t(sx, E_M, E_P) * (t(sx, k1, k2) * s(sx, k3, E_M))^2
+end
+
+"Anomalous amplitude 𝛽₊ for helicities +--"
+function 𝛽₊_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+    -√8 * s(sx, E_M, E_P) * (t(sx, k1, E_P) * s(sx, k2, k3))^2
+end
+
+"Anomalous amplitude 𝛽₋ for helicities +++"
+function 𝛽₋_ppp(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+    -√8 * s(sx, E_M, E_P) * ((t(sx, k1, k2) * t(sx, k3, E_P))^2 +
+                             (t(sx, k1, k3) * t(sx, k2, E_P))^2 +
+                             (t(sx, k2, k3) * t(sx, k1, E_P))^2)
+end
+
+"Anomalous amplitude 𝛽₋ for helicities ---"
+function 𝛽₋_mmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+    -√8 * t(sx, E_M, E_P) * ((s(sx, k1, E_M) * s(sx, k2, k3))^2 +
+                             (s(sx, k2, E_M) * s(sx, k1, k3))^2 +
+                             (s(sx, k3, E_M) * s(sx, k1, k2))^2)
+end
+
+
+# External interface from helicities enum
+
+"Standard amplitude for given photon helicities"
+function 𝛼_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex
+    if helicities == MMM
+        Complex(0)
+    elseif helicities == MMP
+        𝛼_pmm(sx, 5, 3, 4)
+    elseif helicities == MPM
+        𝛼_pmm(sx, 4, 3, 5)
+    elseif helicities == MPP
+        𝛼_ppm(sx, 4, 5, 3)
+    elseif helicities == PMM
+        𝛼_pmm(sx, 3, 4, 5)
+    elseif helicities == PMP
+        𝛼_ppm(sx, 3, 5, 4)
+    elseif helicities == PPM
+        𝛼_ppm(sx, 3, 4, 5)
+    elseif helicities == PPP
+        Complex(0)
+    else
+        throw(AssertionError("Unexpected helicities"))
+    end
+end
+
+"Anomalous amplitude 𝛽₊ for given photon helicities"
+function 𝛽₊_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex
+    if helicities == MMM
+        Complex(0)
+    elseif helicities == MMP
+        𝛽₊_pmm(sx, 5, 3, 4)
+    elseif helicities == MPM
+        𝛽₊_pmm(sx, 4, 3, 5)
+    elseif helicities == MPP
+        𝛽₊_ppm(sx, 4, 5, 3)
+    elseif helicities == PMM
+        𝛽₊_pmm(sx, 3, 4, 5)
+    elseif helicities == PMP
+        𝛽₊_ppm(sx, 3, 5, 4)
+    elseif helicities == PPM
+        𝛽₊_ppm(sx, 3, 4, 5)
+    elseif helicities == PPP
+        Complex(0)
+    else
+        throw(AssertionError("Unexpected helicities"))
+    end
+end
+
+"Anomalous amplitude 𝛽₋ for given photon helicities"
+function 𝛽₋_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex
+    if helicities == MMM
+        𝛽₋_mmm(sx, 3, 4, 5)
+    elseif helicities == MMP
+        Complex(0)
+    elseif helicities == MPM
+        Complex(0)
+    elseif helicities == MPP
+        Complex(0)
+    elseif helicities == PMM
+        Complex(0)
+    elseif helicities == PMP
+        Complex(0)
+    elseif helicities == PPM
+        Complex(0)
+    elseif helicities == PPP
+        𝛽₋_ppp(sx, 3, 4, 5)
+    else
+        throw(AssertionError("Unexpected helicities"))
+    end
+end
 
 end

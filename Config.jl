@@ -27,31 +27,31 @@ struct Configuration
     event_cut::EventCut
     
     "Fine structure constant"
-    alpha::Float
+    𝛼::Float
     
     "Fine structure constant at the Z peak"
-    alpha_z::Float
+    𝛼_Z::Float
     
     "Conversion factor from GeV^(-2) to pb"
     convers::Float
     
     "Z⁰ boson mass (GeV)"
-    m_z0::Float
+    m_Z⁰::Float
     
     "Z⁰ boson width (GeV)"
-    g_z0::Float
+    g_Z⁰::Float
     
     "Square sine of Weinberg's Theta"
-    sin2_w::Float
+    sin²_w::Float
     
     "Branching factor from Z to e+/e-"
     br_ep_em::Float
     
     "Beta + (???)"
-    beta_plus::Float
+    𝛽₊::Float
     
     "Beta - (???)"
-    beta_minus::Float
+    𝛽₋::Float
     
     "Number of histogram bins (UNUSED)"
     n_bin::Int32
@@ -114,15 +114,15 @@ function Configuration(file_name::AbstractString)
                 next_entry!(Float),  # e_min
                 next_entry!(Float),  # sin_cut
             ),
-            next_entry!(Float),      # alpha
-            next_entry!(Float),      # alpha_z
+            next_entry!(Float),      # 𝛼
+            next_entry!(Float),      # 𝛼_Z
             next_entry!(Float),      # convers
-            next_entry!(Float),      # m_z0
-            next_entry!(Float),      # g_z0
-            next_entry!(Float),      # sin2_w
+            next_entry!(Float),      # m_Z⁰
+            next_entry!(Float),      # g_Z⁰
+            next_entry!(Float),      # sin²_w
             next_entry!(Float),      # br_ep_em
-            next_entry!(Float),      # beta_plus
-            next_entry!(Float),      # beta_moints
+            next_entry!(Float),      # 𝛽₊
+            next_entry!(Float),      # 𝛽₋
             next_entry!(Int32),      # n_bin
             next_entry!(Bool),       # impr
             next_entry!(Bool),       # plot
@@ -168,15 +168,15 @@ function print(c::Configuration)
     println("oCutpar.BCUT   : ", c.event_cut.b_cut)
     println("oCutpar.EMIN   : ", c.event_cut.e_min)
     println("oCutpar.SINCUT : ", c.event_cut.sin_cut)
-    println("ALPHA          : ", c.alpha)
-    println("ALPHAZ         : ", c.alpha_z)
+    println("ALPHA          : ", c.𝛼)
+    println("ALPHAZ         : ", c.𝛼_Z)
     println("CONVERS        : ", c.convers)
-    println("oParam.MZ0     : ", c.m_z0)
-    println("oParam.GZ0     : ", c.g_z0)
-    println("SIN2W          : ", c.sin2_w)
+    println("oParam.MZ0     : ", c.m_Z⁰)
+    println("oParam.GZ0     : ", c.g_Z⁰)
+    println("SIN2W          : ", c.sin²_w)
     println("BREPEM         : ", c.br_ep_em)
-    println("BETAPLUS       : ", c.beta_plus)
-    println("BETAMOINS      : ", c.beta_minus)
+    println("BETAPLUS       : ", c.𝛽₊)
+    println("BETAMOINS      : ", c.𝛽₋)
     println("NBIN           : ", c.n_bin)
     println("oParam.IMPR    : ", c.impr)
     println("PLOT           : ", c.plot)
