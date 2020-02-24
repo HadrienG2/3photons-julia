@@ -46,7 +46,7 @@ function keep_event(cut::EventCut, event::Event)::Bool
 
     # Check if the (beam, photon) angles pass the cut
     cos_nums = ps_out[:, XYZ] * p_el[XYZ]
-    cos_denoms = ps_out[E] * p_el[E]
+    cos_denoms = ps_out[:, E] * p_el[E]
     for (num, denom) ∈ zip(cos_nums, cos_denoms)
         if abs(num) > cut.a_cut * denom
             return false
