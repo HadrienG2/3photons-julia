@@ -15,78 +15,93 @@ include("ResFin.jl")    # Used, depends on: Config.jl, EvGen.jl, Numeric.jl,
                         #                   ResCont.jl
 
 
-using .Config: Configuration
-using .Coupling: Couplings
-using .EvCut: keep_event
-using .EvGen: EventGenerator, generate_event!
-using .Random: RandomGenerator
-using .ResFin: ResultsBuilder
+"Artificial module introduced as a performance optimization"
+module MainModule
+
+using ..Config: Configuration
+using ..Coupling: Couplings
+using ..EvCut: keep_event
+using ..EvGen: EventGenerator, generate_event!
+using ..Random: RandomGenerator
+using ..ResFin: ResultsBuilder
+
+export main
 
 
-# === CONFIGURATION READOUT ===
+"Artificial function introduced as a performance optimization"
+function main()
+    # === CONFIGURATION READOUT ===
 
-# Load the configuration from its file
-cfg = Configuration("valeurs")
-
-
-# === SIMULATION INITIALIZATION ===
-
-# Record when the simulation started
-#
-# NOTE: Unlike the C++ version, we do this after loading the configuration file,
-#       which reduces IO-induced timing fluctuations.
-#
-start_time_s = time()
-
-# NOTE: Removed final particle mass array. Since we are simulating photons, we
-#       know that all masses will be zero.
-
-# NOTE: Deleted the original WTEV value. In the C++ code, it was overwritten by
-#       the first RAMBO call w/o having ever been read!
-
-# Compute physical couplings
-couplings = Couplings(cfg)
-
-# Initialize the event generator
-evgen = EventGenerator(cfg.e_tot)
+    # Load the configuration from its file
+    cfg = Configuration("valeurs")
 
 
-# === SIMULATION EXECUTION ===
+    # === SIMULATION INITIALIZATION ===
 
-"""
-This kernel simulates a number of events, given an initial random number
-generator state, and return the accumulated intermediary results.
-"""
-function simulate_events(num_events::UInt, rng::RandomGenerator)::ResultsBuilder
-    # Setup a results accumulator
-    res_builder = ResultsBuilder(cfg, evgen.event_weight)
-
-    # Simulate the requested number of events
+    # Record when the simulation started
     #
-    # DEBUG: If that seems stuck, try @time for allocations profiling...
+    # NOTE: Unlike the C++ version, we do this after loading the configuration file,
+    #       which reduces IO-induced timing fluctuations.
     #
-    for _ = 1:num_events
-        # Generate an event
-        event = generate_event!(rng, evgen)
+    start_time_s = time()
 
-        # If the event passes the cut, compute the total weight (incl. matrix
-        # elements) and integrate it into the final results.
-        if keep_event(cfg.event_cut, event)
-            # TODO: Not implemented yet
-            throw(AssertionError("Not implemented yet"))
+    # NOTE: Removed final particle mass array. Since we are simulating photons, we
+    #       know that all masses will be zero.
+
+    # NOTE: Deleted the original WTEV value. In the C++ code, it was overwritten by
+    #       the first RAMBO call w/o having ever been read!
+
+    # Compute physical couplings
+    couplings = Couplings(cfg)
+
+    # Initialize the event generator
+    evgen = EventGenerator(cfg.e_tot)
+
+
+    # === SIMULATION EXECUTION ===
+
+    """
+    This kernel simulates a number of events, given an initial random number
+    generator state, and return the accumulated intermediary results.
+    """
+    function simulate_events(num_events::UInt, rng::RandomGenerator)::ResultsBuilder
+        # Setup a results accumulator
+        res_builder = ResultsBuilder(cfg, evgen.event_weight)
+
+        # Simulate the requested number of events
+        #
+        # DEBUG: If that seems stuck, try @time for allocations profiling...
+        #
+        for _ = 1:num_events
+            # Generate an event
+            event = generate_event!(rng, evgen)
+
+            # If the event passes the cut, compute the total weight (incl. matrix
+            # elements) and integrate it into the final results.
+            if keep_event(cfg.event_cut, event)
+                # TODO: Not implemented yet
+                throw(AssertionError("Not implemented yet"))
+            end
         end
+
+        # Return the accumulated results
+        res_builder
     end
 
-    # Return the accumulated results
-    res_builder
+    # TODO: Replace with actual execution once we have that
+    simulate_events(cfg.num_events, RandomGenerator())
+
+
+    # TODO: Finish translating the program
+    #
+    # TODO: After translating, turns this into more idiomatic Julia (e.g. unicode
+    #       variable names, more genericity...
+    throw(AssertionError("Not implemented yet"))
 end
 
-# TODO: Replace with actual execution once we have that
-simulate_events(cfg.num_events, RandomGenerator())
+end
 
 
-# TODO: Finish translating the program
-#
-# TODO: After translating, turns this into more idiomatic Julia (e.g. unicode
-#       variable names, more genericity...
-throw(AssertionError("Not implemented yet"))
+# FIXME: The need for such ceremony to get optimal performance from the main
+#        function is arguably a Julia bug...
+MainModule.main()
