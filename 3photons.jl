@@ -27,7 +27,7 @@ using ..EvCut: keep_event
 using ..EvGen: EventGenerator, generate_event!
 using ..Random: RandomGenerator
 using ..ResCont: ResultContribution
-using ..ResFin: ResultsBuilder
+using ..ResFin: integrate_contrib!, ResultsBuilder
 
 export main
 
@@ -84,8 +84,9 @@ function main()
             # elements) and integrate it into the final results.
             if keep_event(cfg.event_cut, event)
                 res_contrib = ResultContribution(couplings, event)
-                # TODO: Not implemented yet
-                throw(AssertionError("Not implemented yet"))
+                # NOTE: The original code would display the result here
+                integrate_contrib!(res_builder, res_contrib)
+                # NOTE: The FORTRAN code would fill histograms here
             end
         end
 

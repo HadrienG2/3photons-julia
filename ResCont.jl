@@ -13,7 +13,7 @@ using ..EvGen: Event, NUM_OUTGOING
 using ..Numeric: Float
 using ..Spinor: 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, MMM, NUM_HELICITIES, PhotonHelicities,
                 PPP, SpinorProducts
-using StaticArrays: SMatrix, SVector, @SMatrix
+using StaticArrays: SMatrix, SVector, @SMatrix, @SVector
 
 export NUM_RESULTS, ResultContibution, ResultVector
 
@@ -78,6 +78,12 @@ function ResultContribution(couplings::Couplings, event::Event)
         end
         for contrib=A:I_MX, hel=1:NUM_HELICITIES
     ]
+end
+
+
+"Compute the sums of the squared matrix elements for each contribution"
+function m²_sums(rc::ResultContribution)::ResultVector
+    @SVector [ sum(rc[i, :]) for i=1:NUM_RESULTS ]
 end
 
 end

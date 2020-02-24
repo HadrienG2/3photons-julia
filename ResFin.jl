@@ -13,7 +13,8 @@ module ResFin
 using ..Config: Configuration
 using ..EvGen: NUM_OUTGOING
 using ..Numeric: Float
-using ..ResCont: NUM_RESULTS, ResultVector
+using ..ResCont: m²_sums, NUM_RESULTS, ResultContribution, ResultVector
+using LinearAlgebra: ⋅
 
 export ResultsBuilder
 
@@ -22,23 +23,23 @@ export ResultsBuilder
 This struct will accumulate intermediary results during integration, and
 ultimately compute the final results (see FinalResults below).
 """
-struct ResultsBuilder
+mutable struct ResultsBuilder
     # === RESULT ACCUMULATORS ===
 
     "Number of integrated events"
     selected_events::UInt
 
     "Accumulated cross-section for each contribution"
-    spm2::ResultVector
+    spm²::ResultVector
 
     "Accumulated variance for each contribution"
     vars::ResultVector
 
     "Impact of each contribution on the cross-section"
-    sigma_contribs::ResultVector
+    σ_contribs::ResultVector
 
     "Accumulated total cross-section"
-    sigma::Float
+    σ::Float
 
     "Accumulated total variance"
     variance::Float
@@ -66,6 +67,7 @@ struct ResultsBuilder
     "??? (Ask Vincent Lafage)"
     ecart_pic::Float
 end
+
 
 "Prepare for results integration"
 function ResultsBuilder(cfg::Configuration, event_weight::Float)
@@ -99,7 +101,7 @@ function ResultsBuilder(cfg::Configuration, event_weight::Float)
     aa_contrib = com_contrib * c_aa
     bb_contrib = com_contrib * c_bb * propag / gzr^2
     ab_contrib = com_contrib * c_ab * 2 * cfg.𝛽₊ * propag / gzr
-    sigma_contribs = ResultVector(
+    σ_contribs = ResultVector(
         aa_contrib,
         bb_contrib * cfg.𝛽₊^2,
         bb_contrib * cfg.𝛽₋^2,
@@ -113,10 +115,10 @@ function ResultsBuilder(cfg::Configuration, event_weight::Float)
     #
     ResultsBuilder(
         0,                   # selected_events
-        zeros(NUM_RESULTS),  # spm2
+        zeros(NUM_RESULTS),  # spm²
         zeros(NUM_RESULTS),  # vars
-        sigma_contribs,
-        0,                   # sigma
+        σ_contribs,
+        0,                   # σ
         0,                   # variance
 
         cfg,
@@ -125,6 +127,18 @@ function ResultsBuilder(cfg::Configuration, event_weight::Float)
         propag,
         ecart_pic,
     )
+end
+
+
+"Integrate one intermediary result into the simulation results"
+function integrate_contrib!(rb::ResultsBuilder, result::ResultContribution)
+    rb.selected_events += 1
+    spm²_dif = m²_sums(result)
+    rb.spm² += spm²_dif
+    rb.vars += spm²_dif.^2
+    weight = spm²_dif ⋅ rb.σ_contribs
+    rb.σ += weight
+    rb.variance += weight^2
 end
 
 end
