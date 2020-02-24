@@ -172,16 +172,16 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Flo
     exp_min_e = params[exp_min_e_idx, :]
 
     # Compute the outgoing momenta
-    cos_φ = cos.(φ)
-    sin_φ = sin.(φ)
+    # NOTE: Unlike Rust, Julia needs manual sincos optimization here
+    sincos_φ = sincos.(φ)
     sin_θ = sqrt.(1 .- cos_θ.^2)
     energy = -log.(exp_min_e .+ eps(Float))
     @SMatrix [
         energy[par] *
             if coord == X
-                sin_θ[par] * sin_φ[par]
+                sin_θ[par] * sincos_φ[par][1]
             elseif coord == Y
-                sin_θ[par] * cos_φ[par]
+                sin_θ[par] * sincos_φ[par][2]
             elseif coord == Z
                 cos_θ[par]
             elseif coord == E
