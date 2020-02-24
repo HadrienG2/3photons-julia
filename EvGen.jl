@@ -19,13 +19,16 @@ export EventGenerator, electron_momentum, generate_event!, outgoing_momenta,
 
 
 "Number of incoming particles"
-const INCOMING_COUNT = 2
+const NUM_INCOMING = 2
 
 "Number of outgoing particles (replaces original INP)"
-const OUTGOING_COUNT = 3
+const NUM_OUTGOING = 3
 
 "Number of particles in an event"
-const PARTICLE_COUNT = INCOMING_COUNT + OUTGOING_COUNT
+const NUM_PARTICLES = NUM_INCOMING + NUM_OUTGOING
+
+"Number of possible spin values of the outgoing particles"
+const NUM_SPINS = 2
 
 
 "Generator of ee -> ppp events"
@@ -37,7 +40,7 @@ struct EventGenerator
     event_weight::Float
 
     "Incoming electron and positron momenta"
-    incoming_momenta::SMatrix{INCOMING_COUNT, 4, Float}
+    incoming_momenta::SMatrix{NUM_INCOMING, 4, Float}
 end
 
 
@@ -52,26 +55,26 @@ initialization from the original C++ 3photons code.
 function EventGenerator(e_tot::Float)
     # Check on the number of particles. The check for N<101 is gone since unlike
     # the original RAMBO, we don't use arrays of hardcoded size.
-    @enforce (OUTGOING_COUNT > 1)
+    @enforce (NUM_OUTGOING > 1)
 
     # As currently written, this code only works for two incoming particles
-    @enforce (INCOMING_COUNT == 2)
+    @enforce (NUM_INCOMING == 2)
 
     # Compute some numerical constants. Replaces the lazy initialization from
     # the original RAMBO code with something less branchy.
     println("IBegin")
-    z = (OUTGOING_COUNT-1) * log(π/2)  # Replaces Z[INP-1] in the original code
-    for k = 2:OUTGOING_COUNT-1
+    z = (NUM_OUTGOING-1) * log(π/2)  # Replaces Z[INP-1] in the original code
+    for k = 2:NUM_OUTGOING-1
         z -= 2 * log(k - 1)
     end
-    z -= log(OUTGOING_COUNT - 1)
+    z -= log(NUM_OUTGOING - 1)
 
     # NOTE: The check on total energy is gone, because we only generate massless
     #       photons and so the total energy will always be enough.
     #       Counting of nonzero masses is also gone because it was unused.
 
     # All generated events will have the same weight: pre-compute it
-    ln_weight = (2 * OUTGOING_COUNT - 4) * log(e_tot) + z
+    ln_weight = (2 * NUM_OUTGOING - 4) * log(e_tot) + z
     @enforce (ln_weight >= -180 && ln_weight < 174)
     event_weight = exp(ln_weight)
 
@@ -100,7 +103,7 @@ Storage for ee -> ppp event data
 
 Encapsulates a vector of incoming and outgoing 4-momenta.
 """
-const Event = SMatrix{PARTICLE_COUNT, 4, Float}
+const Event = SMatrix{NUM_PARTICLES, 4, Float}
 
 
 "Extract the electron 4-momentum"
@@ -110,8 +113,8 @@ end
 
 
 "Access the outgoing 4-momenta"
-function outgoing_momenta(event::Event)::SMatrix{OUTGOING_COUNT, 4, Float}
-    OUTGOING = SVector{OUTGOING_COUNT}(INCOMING_COUNT+1:PARTICLE_COUNT)
+function outgoing_momenta(event::Event)::SMatrix{NUM_OUTGOING, 4, Float}
+    OUTGOING = SVector{NUM_OUTGOING}(NUM_INCOMING+1:NUM_PARTICLES)
     event[OUTGOING, :]
 end
 
@@ -122,7 +125,7 @@ function min_photon_energy(event::Event)::Float
     #
     # FIXME: Revise this code once option to disable sorting returns.
     #
-    outgoing_momenta(event)[OUTGOING_COUNT, E]
+    outgoing_momenta(event)[NUM_OUTGOING, E]
 end
 
 
@@ -134,9 +137,9 @@ Generate massless outgoing 4-momenta in infinite phase space
 The output momenta are provided as a matrix where rows are 4-momentum
 components (Px, Py, Pz, E) and columns are particles.
 """
-function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, OUTGOING_COUNT, Float}
-    # Must be generalized to support OUTGOING_COUNT != 3
-    @enforce (OUTGOING_COUNT == 3) "This function assumes 3 outgoing particles"
+function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Float}
+    # Must be generalized to support NUM_OUTGOING != 3
+    @enforce (NUM_OUTGOING == 3) "This function assumes 3 outgoing particles"
 
     # This implementation targets maximal reproducibility with respect to the
     # original 3photons program, at the expense of performance.
@@ -159,7 +162,7 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, OUTGOING_COUNT, F
         else
             throw(AssertionError("Unexpected coordinate"))
         end
-        for coord=1:3, _par=1:OUTGOING_COUNT
+        for coord=1:3, _par=1:NUM_OUTGOING
     ]
     cos_theta = params[cos_theta_idx, :]
     phi = params[phi_idx, :]
@@ -183,7 +186,7 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, OUTGOING_COUNT, F
             else
                 throw(AssertionError("Unexpected coordinate"))
             end
-        for coord=1:4, par=1:OUTGOING_COUNT
+        for coord=1:4, par=1:NUM_OUTGOING
     ]
 end
 
@@ -215,9 +218,9 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
     #
     tr_q = transpose(q)
     rq = tr_q[:, XYZ] * r[XYZ]
-    p_e = MVector{OUTGOING_COUNT}(α * (r[E] * tr_q[:, E] - rq))
+    p_e = MVector{NUM_OUTGOING}(α * (r[E] * tr_q[:, E] - rq))
     b_rq_e = β * rq - tr_q[:, E]
-    p_xyz = MMatrix{OUTGOING_COUNT, 3}(
+    p_xyz = MMatrix{NUM_OUTGOING, 3}(
         α * (r_norm * tr_q[:, XYZ] + b_rq_e * transpose(r[XYZ]))
     )
 
@@ -225,7 +228,7 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
     #
     # FIXME: Make this optional, as in Rust version
     #
-    for par1=1:OUTGOING_COUNT, par2=par1+1:OUTGOING_COUNT
+    for par1=1:NUM_OUTGOING, par2=par1+1:NUM_OUTGOING
         if p_e[par2] > p_e[par1]
             p_e[par1], p_e[par2] = p_e[par2], p_e[par1]
             p_xyz[par1, :], p_xyz[par2, :] = p_xyz[par2, :], p_xyz[par1, :]

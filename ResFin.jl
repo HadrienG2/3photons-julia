@@ -11,7 +11,7 @@ the final results: differential cross-section, sum & variance.
 module ResFin
 
 using ..Config: Configuration
-using ..EvGen: OUTGOING_COUNT
+using ..EvGen: NUM_OUTGOING
 using ..Numeric: Float
 using ..ResCont: NUM_RESULTS, ResultVector
 
@@ -89,7 +89,7 @@ function ResultsBuilder(cfg::Configuration, event_weight::Float)
     propag = 1 / (1 + ecart_pic^2)
 
     # Apply total phase space normalization to the event weight
-    norm = (2π)^(4 - 3*OUTGOING_COUNT) / cfg.num_events
+    norm = (2π)^(4 - 3*NUM_OUTGOING) / cfg.num_events
     # NOTE: This replaces the original WTEV, previously reset every event
     norm_weight = event_weight * norm
 

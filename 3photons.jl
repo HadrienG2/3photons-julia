@@ -4,13 +4,15 @@
 include("Errors.jl")    # No dependency
 include("LinAlg.jl")    # No dependency
 include("Numeric.jl")   # No dependency
-include("ResCont.jl")   # Depends on: Numeric.jl
 include("Random.jl")    # Used, depends on: Errors.jl, Numeric.jl
 include("EvGen.jl")     # Used, depends on: Errors.jl, LinAlg.jl, Numeric.jl,
                         #                   Random.jl
-include("EvCut.jl")     # Depends on: Errors.jl, EvGen.jl, LinAlg.jl, Numeric.jl
+include("Spinor.jl")    # Depends on: Errors.jl, EvGen.jl
+include("EvCut.jl")     # Used, depends on: Errors.jl, EvGen.jl, LinAlg.jl,
+                        #                   Numeric.jl
 include("Config.jl")    # Used, depends on: Errors.jl, EvCut.jl, Numeric.jl
 include("Coupling.jl")  # Used, depends on: Config.jl, Numeric.jl
+include("ResCont.jl")   # Used, depends on: Coupling.jl, EvGen.jl, Numeric.jl
 include("ResFin.jl")    # Used, depends on: Config.jl, EvGen.jl, Numeric.jl,
                         #                   ResCont.jl
 
@@ -23,6 +25,7 @@ using ..Coupling: Couplings
 using ..EvCut: keep_event
 using ..EvGen: EventGenerator, generate_event!
 using ..Random: RandomGenerator
+using ..ResCont: ResultContribution
 using ..ResFin: ResultsBuilder
 
 export main
@@ -79,6 +82,7 @@ function main()
             # If the event passes the cut, compute the total weight (incl. matrix
             # elements) and integrate it into the final results.
             if keep_event(cfg.event_cut, event)
+                res_contrib = ResultContribution(couplings, event)
                 # TODO: Not implemented yet
                 throw(AssertionError("Not implemented yet"))
             end
