@@ -44,16 +44,16 @@ function main()
 
     # Record when the simulation started
     #
-    # NOTE: Unlike the C++ version, we do this after loading the configuration file,
-    #       which reduces IO-induced timing fluctuations.
+    # NOTE: Unlike the C++ version, we do this after loading the configuration
+    #       file, which reduces IO-induced timing fluctuations.
     #
     start_time_s = time()
 
-    # NOTE: Removed final particle mass array. Since we are simulating photons, we
-    #       know that all masses will be zero.
+    # NOTE: Removed final particle mass array. Since we are simulating photons,
+    #       we know that all masses will be zero.
 
-    # NOTE: Deleted the original WTEV value. In the C++ code, it was overwritten by
-    #       the first RAMBO call w/o having ever been read!
+    # NOTE: Deleted the original WTEV value. In the C++ code, it was overwritten
+    #       by the first RAMBO call w/o having ever been read!
 
     # Compute physical couplings
     couplings = Couplings(cfg)
@@ -80,8 +80,8 @@ function main()
             # Generate an event
             event = generate_event!(rng, evgen)
 
-            # If the event passes the cut, compute the total weight (incl. matrix
-            # elements) and integrate it into the final results.
+            # If the event passes the cut, compute the total weight (incl.
+            # matrix elements) and integrate it into the final results.
             if keep_event(cfg.event_cut, event)
                 res_contrib = ResultContribution(couplings, event)
                 # NOTE: The original code would display the result here
@@ -100,8 +100,8 @@ function main()
 
     # TODO: Finish translating the program
     #
-    # TODO: After translating, turns this into more idiomatic Julia (e.g. unicode
-    #       variable names, more genericity...
+    # TODO: After translating, turns this into more idiomatic Julia (e.g. more
+    #       fancy unicode variable names and broadcasting, more genericity...)
     throw(AssertionError("Not implemented yet"))
 end
 
