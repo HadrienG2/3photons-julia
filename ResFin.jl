@@ -86,8 +86,8 @@ function ResultsBuilder(cfg::Configuration, event_weight::Float)
     c_bb = fact_com * p_bb / cfg.m_Z⁰^4
 
     # Switch to dimensionless variable
-    dzeta = (cfg.e_tot / cfg.m_Z⁰)^2
-    ecart_pic = (dzeta - 1) / gzr
+    ζ = (cfg.e_tot / cfg.m_Z⁰)^2
+    ecart_pic = (ζ - 1) / gzr
     propag = 1 / (1 + ecart_pic^2)
 
     # Apply total phase space normalization to the event weight
