@@ -28,6 +28,7 @@ using ..EvGen: EventGenerator, generate_event!
 using ..Random: RandomGenerator
 using ..ResCont: ResultContribution
 using ..ResFin: integrate_contrib!, ResultsBuilder
+using Profile
 
 export main
 
@@ -94,8 +95,10 @@ function main()
         res_builder
     end
 
-    # TODO: Replace with actual execution once we have that
-    @time simulate_events(cfg.num_events, RandomGenerator())
+    # TODO: Replace with actual execution schedule once we have that
+    simulate_events(UInt(1), RandomGenerator())  # Keep JIT out of the profile
+    @profile @time simulate_events(cfg.num_events, RandomGenerator())
+    Profile.print(mincount=350, noisefloor=2.0, sortedby=:count)
 
 
     # TODO: Finish translating the program
