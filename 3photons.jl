@@ -7,12 +7,13 @@ include("Numeric.jl")   # No dependency
 include("Random.jl")    # Used, depends on: Errors.jl, Numeric.jl
 include("EvGen.jl")     # Used, depends on: Errors.jl, LinAlg.jl, Numeric.jl,
                         #                   Random.jl
-include("Spinor.jl")    # Depends on: Errors.jl, EvGen.jl
+include("Spinor.jl")    # Depends on: Errors.jl, EvGen.jl, LinAlg.jl, Numeric.jl
 include("EvCut.jl")     # Used, depends on: Errors.jl, EvGen.jl, LinAlg.jl,
                         #                   Numeric.jl
 include("Config.jl")    # Used, depends on: Errors.jl, EvCut.jl, Numeric.jl
 include("Coupling.jl")  # Used, depends on: Config.jl, Numeric.jl
-include("ResCont.jl")   # Used, depends on: Coupling.jl, EvGen.jl, Numeric.jl
+include("ResCont.jl")   # Used, depends on: Coupling.jl, Errors.jl, EvGen.jl,
+                        #                   Numeric.jl
 include("ResFin.jl")    # Used, depends on: Config.jl, EvGen.jl, Numeric.jl,
                         #                   ResCont.jl
 
