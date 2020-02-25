@@ -65,7 +65,7 @@ end
 
 
 "Constructor that loads the simulation configuration from a file"
-function Configuration(file_name::AbstractString)
+function Configuration(file_name::AbstractString; jit_warmup::Bool=false)
     # Open the config file
     open(file_name) do config_file
         # Parse a config file entry, given its type
@@ -129,7 +129,9 @@ function Configuration(file_name::AbstractString)
         )
 
         # Display it like the C++ version would (this eases comparisons)
-        print(config)
+        if !jit_warmup
+            print(config)
+        end
 
         # A sensible simulation must run for at least one event
         @enforce (config.num_events > 0) "Invalid event count"

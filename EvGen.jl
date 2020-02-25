@@ -53,7 +53,7 @@ Initialize event generation for a center-of-mass energy of e_tot.
 Combines former functionality of ppp constructor and IBEGIN-based lazy
 initialization from the original C++ 3photons code.
 """
-function EventGenerator(e_tot::Float)
+function EventGenerator(e_tot::Float; jit_warmup::Bool=false)
     # Check on the number of particles. The check for N<101 is gone since unlike
     # the original RAMBO, we don't use arrays of hardcoded size.
     @enforce (NUM_OUTGOING > 1)
@@ -63,7 +63,9 @@ function EventGenerator(e_tot::Float)
 
     # Compute some numerical constants. Replaces the lazy initialization from
     # the original RAMBO code with something less branchy.
-    println("IBegin")
+    if !jit_warmup
+        println("IBegin")
+    end
     z = (NUM_OUTGOING-1) * log(π/2)  # Replaces Z[INP-1] in the original code
     for k = 2:NUM_OUTGOING-1
         z -= 2 * log(k - 1)

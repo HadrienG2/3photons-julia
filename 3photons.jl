@@ -67,6 +67,7 @@ include("ResCont.jl")     # Used, depends on: Coupling.jl, Errors.jl, EvGen.jl,
                           #                   Numeric.jl
 include("ResFin.jl")      # Used, depends on: Config.jl, Errors.jl, EvGen.jl,
                           #                   Numeric.jl, ResCont.jl
+include("Output.jl")      # Used, depends on: Config.jl, Numeric.jl, ResFin.jl
 include("Scheduling.jl")  # Used, depends on: Errors.jl, Random.jl, ResFin.jl
 
 
@@ -77,21 +78,24 @@ using ..Config: Configuration
 using ..Coupling: Couplings
 using ..EvCut: keep_event
 using ..EvGen: EventGenerator, generate_event!
+using ..Output: dump_results
 using ..Random: RandomGenerator
 using ..ResCont: ResultContribution
 using ..ResFin: integrate_contrib!, ResultsBuilder
 using ..Scheduling: run_simulation
-using Profile
 
 export main
 
 
+# TODO: After translating, turns this into more idiomatic Julia (e.g. more
+#       fancy unicode variable names and broadcasting, more genericity...)
+
 "Artificial function introduced as a performance optimization"
-function main()
+function main(;jit_warmup::Bool=false)
     # === CONFIGURATION READOUT ===
 
     # Load the configuration from its file
-    cfg = Configuration("valeurs")
+    cfg = Configuration("valeurs"; jit_warmup=jit_warmup)
 
 
     # === SIMULATION INITIALIZATION ===
@@ -113,7 +117,7 @@ function main()
     couplings = Couplings(cfg)
 
     # Initialize the event generator
-    evgen = EventGenerator(cfg.e_tot)
+    evgen = EventGenerator(cfg.e_tot; jit_warmup=jit_warmup)
 
 
     # === SIMULATION EXECUTION ===
@@ -149,22 +153,30 @@ function main()
     end
 
     # Run the simulation
-    # TODO: Remove profiling once satisfied with perfs
-    run_simulation(UInt(1), simulate_events)  # Keep JIT out of the profile
-    @profile @time run_simulation(cfg.num_events, simulate_events)
-    Profile.print(mincount=140, noisefloor=1.0)  # Ignore <2% + low wrt parent
+    num_events = jit_warmup ? UInt(1) : cfg.num_events
+    result = run_simulation(num_events, simulate_events)
+
+    # NOTE: This is where the FORTRAN code would normalize histograms
 
 
-    # TODO: Finish translating the program
-    #
-    # TODO: After translating, turns this into more idiomatic Julia (e.g. more
-    #       fancy unicode variable names and broadcasting, more genericity...)
-    throw(AssertionError("Not implemented yet"))
+    # === RESULTS DISPLAY AND STORAGE ===
+
+    # Measure how much time has elapsed
+    elapsed_secs = time() - start_time_s
+
+    # Send the results to the standard output and to disk
+    if !jit_warmup
+        dump_results(cfg, result, elapsed_secs)
+    end
 end
 
 end
 
+
+using Profile
 
 # FIXME: The need for such ceremony to get optimal performance from the main
 #        function is arguably a Julia bug...
-MainModule.main()
+MainModule.main(jit_warmup=true)  # Get JIT out of our profile
+@profile @time MainModule.main()
+Profile.print(mincount=130, noisefloor=1.0)  # Ignore <2% + low wrt parent
