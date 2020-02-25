@@ -14,9 +14,10 @@ using ..Config: Configuration
 using ..Errors: @enforce
 using ..EvGen: NUM_OUTGOING, NUM_SPINS
 using ..Numeric: Float
-using ..ResCont: m²_sums, NUM_RESULTS, ResultContribution, ResultVector
+using ..ResCont: A, B₊, B₋, I_MX, m²_sums, NUM_RESULTS, ResultContribution,
+                 ResultVector, R_MX
 using LinearAlgebra: ⋅
-using StaticArrays: SMatrix
+using StaticArrays: MMatrix, SMatrix, @MMatrix, @SMatrix
 
 export integrate_contrib!, finalize_results, merge_results!, ResultsBuilder
 
@@ -165,6 +166,12 @@ Rows are spins, columns are result contributions (in the ResCont.jl sense)
 """
 const PerSpinResults = SMatrix{NUM_SPINS, NUM_RESULTS, Float};
 
+"Index of negative spin data"
+const SP₋ = 1
+
+"Index of positive spin data"
+const SP₊ = 2
+
 
 "Final results of the simulation"
 struct FinalResults
@@ -223,8 +230,80 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
         v_var = √(v_var / n_ev) / abs(v_spm² / n_ev)
     end
 
-    # TODO: Finish translating the program
-    throw(AssertionError("Not implemented yet"))
+    # Copy for the opposite spin
+    spm² = @MMatrix [
+        builder.spm²[res]
+        for _spin=1:NUM_SPINS, res=1:NUM_RESULTS
+    ]
+    vars = @SMatrix [
+        builder.vars[res]
+        for _spin=1:NUM_SPINS, res=1:NUM_RESULTS
+    ]
+
+    # Electroweak polarisations factors for the 𝛽₊/𝛽₋ anomalous contribution
+    pol₊ = -2 * cfg.sin²_w
+    pol₋ = 1 + pol₊
+
+    # Take polarisations into account
+    spm²[SP₋, B₊:B₋] *= pol₋^2
+    spm²[SP₊, B₊:B₋] *= pol₊^2
+    spm²[SP₋, R_MX:I_MX] *= pol₋
+    spm²[SP₊, R_MX:I_MX] *= pol₊
+
+    # Flux factor (=1/2s for 2 initial massless particles)
+    flux = 1 / (2 * cfg.e_tot^2)
+
+    # Apply physical coefficients and Z⁰ propagator to each spin
+    spm² *= builder.fact_com * flux * builder.norm_weight
+    gm_Z⁰ = cfg.g_Z⁰ * cfg.m_Z⁰
+    spm²[:, B₊:I_MX] *= builder.propag / gm_Z⁰
+    spm²[:, B₊:B₋] /= gm_Z⁰
+    spm²[:, R_MX] *= builder.ecart_pic
+
+    # Compute other parts of the result
+    𝛽_min = √((spm²[SP₋, A] + spm²[SP₊, A]) / (spm²[SP₋, B₊] + spm²[SP₊, B₊]))
+
+    ss_denom = spm²[SP₋, A] + spm²[SP₊, A]
+    ss_norm = 1 / (2 + √ss_denom)
+
+    ss₊ = (spm²[SP₋, B₊] + spm²[SP₊, B₊]) * ss_norm
+    ss₋ = (spm²[SP₋, B₋] + spm²[SP₊, B₋]) * ss_norm
+
+    inc_ss_common =
+        √((spm²[SP₋, A] * vars[SP₋, A])^2 + (spm²[SP₊, A] * vars[SP₊, A])^2) /
+            (2 * abs(ss_denom))
+
+    inc_ss₊ =
+        √((spm²[SP₋, B₊] * vars[SP₋, B₊])^2 + (spm²[SP₊, B₊] * vars[SP₊, B₊])^2) /
+            abs(spm²[SP₋, B₊] + spm²[SP₊, B₊]) +
+        inc_ss_common
+    inc_ss₋ =
+        √((spm²[SP₋, B₋] * vars[SP₋, B₋])^2 + (spm²[SP₊, B₋] * vars[SP₊, B₋])^2) /
+            abs(spm²[SP₋, B₋] + spm²[SP₊, B₋]) +
+        inc_ss_common
+
+    variance = (builder.variance - builder.σ^2 / n_ev) / (n_ev - 1)
+    prec = √(variance / n_ev) / abs(builder.σ / n_ev)
+    σ = builder.σ * flux
+
+    # Return the final results
+    #
+    # FIXME: Isn't there any way to say which field we are talking about?
+    #
+    FinalResults(
+        builder.selected_events,
+        spm²,
+        vars,
+        σ,
+        variance,
+        𝛽_min,
+        prec,
+        ss₊,
+        inc_ss₊,
+        ss₋,
+        inc_ss₋,
+        cfg,
+    )
 end
 
 end

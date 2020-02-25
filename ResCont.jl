@@ -25,19 +25,19 @@ const NUM_RESULTS = 5
 const ResultVector = SVector{NUM_RESULTS, Float}
 
 "Index of the electromagnetic matrix element"
-const A = 0
+const A = 1
 
 "Index of the positive electroweak matrix element"
-const B₊ = 1
+const B₊ = 2
 
 "Index of the negative electroweak matrix element"
-const B₋ = 2
+const B₋ = 3
 
 "Index of the real part of the mixed matrix element"
-const R_MX = 3
+const R_MX = 4
 
 "Index of the imaginary part of the mixed matrix element"
-const I_MX = 4
+const I_MX = 5
 
 
 "Array of square matrix elements contribution with detail of helicities"

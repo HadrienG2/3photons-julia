@@ -27,7 +27,7 @@ This constant may need to be tuned in the future if CPUs become faster or
 synchronization overhead changes. But the rate of such change is expected to
 be low enough for hard-coding of this constant to be reasonable.
 """
-const EVENT_BATCH_SIZE = 10000
+const EVENT_BATCH_SIZE = UInt(10000)
 
 
 # FIXME: Extract sequential back-end in a separate file
