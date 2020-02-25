@@ -1,5 +1,5 @@
-# Depends on Config.jl, EvGen.jl, Numeric.jl and ResCont.jl being include-d
-# beforehand
+# Depends on Config.jl, Errors.jl, EvGen.jl, Numeric.jl and ResCont.jl being
+# include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -11,13 +11,17 @@ the final results: differential cross-section, sum & variance.
 module ResFin
 
 using ..Config: Configuration
-using ..EvGen: NUM_OUTGOING
+using ..Errors: @enforce
+using ..EvGen: NUM_OUTGOING, NUM_SPINS
 using ..Numeric: Float
 using ..ResCont: m²_sums, NUM_RESULTS, ResultContribution, ResultVector
 using LinearAlgebra: ⋅
+using StaticArrays: SMatrix
 
-export ResultsBuilder
+export integrate_contrib!, finalize_results, merge_results!, ResultsBuilder
 
+
+# === RESULTS ACCUMULATION ===
 
 """
 This struct will accumulate intermediary results during integration, and
@@ -131,14 +135,96 @@ end
 
 
 "Integrate one intermediary result into the simulation results"
-function integrate_contrib!(rb::ResultsBuilder, result::ResultContribution)
-    rb.selected_events += 1
+function integrate_contrib!(builder::ResultsBuilder, result::ResultContribution)
+    builder.selected_events += 1
     spm²_dif = m²_sums(result)
-    rb.spm² += spm²_dif
-    rb.vars += spm²_dif.^2
-    weight = spm²_dif ⋅ rb.σ_contribs
-    rb.σ += weight
-    rb.variance += weight^2
+    builder.spm² += spm²_dif
+    builder.vars += spm²_dif.^2
+    weight = spm²_dif ⋅ builder.σ_contribs
+    builder.σ += weight
+    builder.variance += weight^2
+end
+
+
+"Integrate pre-aggregated results from another ResultsBuilder"
+function merge_results!(dest::ResultsBuilder, src::ResultsBuilder)
+    dest.selected_events += src.selected_events
+    dest.spm² += src.spm²
+    dest.vars += src.vars
+    dest.σ += src.σ
+    dest.variance += src.variance
+end
+
+
+# === FINAL RESULTS ===
+
+"""
+Matrix of per-spin result contributions
+
+Rows are spins, columns are result contributions (in the ResCont.jl sense)
+"""
+const PerSpinResults = SMatrix{NUM_SPINS, NUM_RESULTS, Float};
+
+
+"Final results of the simulation"
+struct FinalResults
+    "Number of integrated events"
+    selected_events::UInt
+
+    "Cross-section for each spin"
+    spm²::PerSpinResults
+
+    "Variance for each spin"
+    vars::PerSpinResults
+
+    "Total cross-section"
+    σ::Float
+
+    "Relative precision"
+    prec::Float
+
+    "Total variance"
+    variance::Float
+
+    "Beta minimum (???)"
+    𝛽_min::Float
+
+    "Statistical significance B+(pb-1/2) (???)"
+    ss₊::Float
+
+    "Incertitide associated with ss₊"
+    inc_ss₊::Float
+
+    "Statistical significance B-(pb-1/2) (???)"
+    ss₋::Float
+
+    "Incertitude associated with ss₋"
+    inc_ss₋::Float
+
+    # FIXME: How does one express "should be private" in Julia?
+    "Configuration of the simulation"
+    _cfg::Configuration
+end
+
+
+"Turn integrated simulation data into finalized results"
+function finalize_results(builder::ResultsBuilder)::FinalResults
+    # This code depends on some aspects of the problem definition
+    @enforce (NUM_SPINS == 2) "This code currently assumes 2 spins"
+    @enforce (NUM_RESULTS == 5) "This code currently assumes 5 matrix elements"
+
+    # Simulation configuration shorthands
+    cfg = builder.cfg
+    n_ev = cfg.num_events
+
+    # Compute the relative uncertainties for one spin
+    for (v_spm², v_var) ∈ zip(builder.spm², builder.vars)
+        v_var = (v_var - v_spm²^2 / n_ev) / (n_ev - 1)
+        v_var = √(v_var / n_ev) / abs(v_spm² / n_ev)
+    end
+
+    # TODO: Finish translating the program
+    throw(AssertionError("Not implemented yet"))
 end
 
 end
