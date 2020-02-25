@@ -104,12 +104,13 @@ const INCOMING_E₋ = 1
 const INCOMING_E₊ = 2
 
 
+# FIXME: Need to specify SMatrix length to avoid type instability?
 """
 Storage for ee -> ppp event data
 
 Encapsulates a vector of incoming and outgoing 4-momenta.
 """
-const Event = SMatrix{NUM_PARTICLES, 4, Float}
+const Event = SMatrix{NUM_PARTICLES, 4, Float, NUM_PARTICLES*4}
 
 
 "Extract the electron 4-momentum"

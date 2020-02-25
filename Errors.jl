@@ -8,6 +8,7 @@ module Errors
 
 export check
 
+
 """
 Simplified variant of standard @assert macro that does not come with a "may be
 disabled at various optimization levels" caveat.

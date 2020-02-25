@@ -40,8 +40,9 @@ end
 const NUM_HELICITIES = NUM_SPINS^NUM_OUTGOING
 
 
+# FIXME: Need to specify SMatrix length to avoid type instability?
 "Massless 4-momenta spinor inner products"
-const SpinorProducts = SMatrix{NUM_PARTICLES, NUM_PARTICLES, Complex{Float}}
+const SpinorProducts = SMatrix{NUM_PARTICLES, NUM_PARTICLES, Complex{Float}, NUM_PARTICLES^2}
 
 
 # === CONSTRUCTION ===

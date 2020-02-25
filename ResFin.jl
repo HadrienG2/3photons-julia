@@ -160,12 +160,13 @@ end
 
 # === FINAL RESULTS ===
 
+# FIXME: Need to specify SMatrix length to avoid type instability?
 """
 Matrix of per-spin result contributions
 
 Rows are spins, columns are result contributions (in the ResCont.jl sense)
 """
-const PerSpinResults = SMatrix{NUM_SPINS, NUM_RESULTS, Float};
+const PerSpinResults = SMatrix{NUM_SPINS, NUM_RESULTS, Float, NUM_SPINS*NUM_RESULTS};
 
 "Index of negative spin data"
 const SP₋ = 1

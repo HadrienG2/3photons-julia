@@ -40,8 +40,9 @@ const R_MX = 4
 const I_MX = 5
 
 
+# FIXME: Need to specify SMatrix length to avoid type instability?
 "Array of square matrix elements contribution with detail of helicities"
-const ResultContribution = SMatrix{NUM_RESULTS, NUM_HELICITIES, Float}
+const ResultContribution = SMatrix{NUM_RESULTS, NUM_HELICITIES, Float, NUM_RESULTS*NUM_HELICITIES}
 
 
 "Construct the matrix element from the spinor products"
