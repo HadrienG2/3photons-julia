@@ -1,3 +1,53 @@
+# 3 photons: A simple Monte Carlo simulation
+#
+#
+# # Introduction (for the physicist)
+#
+# This small computational program computes cross-section for the particle
+# physics process electron + positron gives three photons (e⁺e⁻ → 𝛾𝛾𝛾).
+#
+# It distinguishes a classical Standard Model contribution, of purely Quantum
+# ElectroDynamic origin and an hypothetic, beyond the Standard Model, New
+# Physics contribution, phenomenologically described by two effective
+# operators.
+#
+# It was designed in the LEP era, so these new interactions occurs between the
+# Z⁰ boson and the three photons.
+#
+# The effective operator can be related to specific models, among which
+# magnetic monopoles that run in a four points loop. The two operators exhibit
+# different (???)
+#
+#
+# # Introduction (for the numerical guy)
+#
+# The physicist want to compute a (multidimensional) integral, so we chose a
+# Monte Carlo algorithm
+#
+#
+# # Introduction (for the computer guy)
+#
+# this program started in a purely procedural style:
+#
+# * read in parameters and initialise counters
+# * loop over (random) event,
+#     * determining their geometrical and energy configuration,
+#     * their phase space weight,
+#     * their transition probability for each polarisation/helicity
+#       configuration, depending on coupling strength
+#     * sum it up
+# * then display / store the result.
+#
+# The use of common (for the original Fortran) or struct (in C) or record
+# types (in Ada) or classes (in C++) illustrates an object oriented design.
+#
+# The fact that we can plug each phase's output as the input of the next phase
+# lend to a functionnal approach.
+
+# FIXME: The above is really a program-wide doc, figure out if Julia supports
+#        exposing that and if so how it should be expressed.
+
+
 # FIXME: This manual dependency tracking is incredibly ugly, and I'm very
 #        surprised that I apparently need to engage in it. Investigate if Julia
 #        truly doesn't provide any better way to organize source code.
@@ -98,7 +148,7 @@ function main()
     # TODO: Replace with actual execution schedule once we have that
     simulate_events(UInt(1), RandomGenerator())  # Keep JIT out of the profile
     @profile @time simulate_events(cfg.num_events, RandomGenerator())
-    Profile.print(mincount=140, noisefloor=1.0)
+    Profile.print(mincount=140, noisefloor=1.0)  # Ignore <2% + low wrt parent
 
 
     # TODO: Finish translating the program
