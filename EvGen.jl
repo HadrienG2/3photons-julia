@@ -96,10 +96,10 @@ end
 # === GENERATED EVENTS ===
 
 "Row of the incoming electron in the event data matrix"
-const INCOMING_E_M = 1
+const INCOMING_E₋ = 1
 
 "Row of the incoming positron in the event data matrix"
-const INCOMING_E_P = 2
+const INCOMING_E₊ = 2
 
 
 """
@@ -112,7 +112,7 @@ const Event = SMatrix{NUM_PARTICLES, 4, Float}
 
 "Extract the electron 4-momentum"
 function electron_momentum(event::Event)::SVector{4, Float}
-    event[INCOMING_E_M, :]
+    event[INCOMING_E₋, :]
 end
 
 

@@ -8,7 +8,7 @@
 module Spinor
 
 using ..Errors: @enforce
-using ..EvGen: Event, INCOMING_E_M, INCOMING_E_P, NUM_INCOMING, NUM_OUTGOING,
+using ..EvGen: Event, INCOMING_E₋, INCOMING_E₊, NUM_INCOMING, NUM_OUTGOING,
                NUM_PARTICLES, NUM_SPINS
 using ..LinAlg: E, X, Y, Z
 using ..Numeric: Float
@@ -84,43 +84,43 @@ end
 
 # Internal computations from specific helicity configurations + indices
 
-const E_M = INCOMING_E_M
-const E_P = INCOMING_E_P
+const E₋ = INCOMING_E₋
+const E₊ = INCOMING_E₊
 
 "Standard amplitude for helicities ++-"
 function 𝛼_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
-    -√8 * s(sx, E_M, E_P) * s(sx, E_M, k3)^2 /
-        (s(sx, E_M, k1) * s(sx, E_M, k2) * s(sx, E_P, k1) * s(sx, E_P, k2))
+    -√8 * s(sx, E₋, E₊) * s(sx, E₋, k3)^2 /
+        (s(sx, E₋, k1) * s(sx, E₋, k2) * s(sx, E₊, k1) * s(sx, E₊, k2))
 end
 
 "Standard amplitude for helicities +--"
 function 𝛼_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
-    -√8 * t(sx, E_M, E_P) * t(sx, E_P, k1)^2 /
-        (t(sx, E_P, k2) * t(sx, E_P, k3) * t(sx, E_M, k2) * t(sx, E_M, k3))
+    -√8 * t(sx, E₋, E₊) * t(sx, E₊, k1)^2 /
+        (t(sx, E₊, k2) * t(sx, E₊, k3) * t(sx, E₋, k2) * t(sx, E₋, k3))
 end
 
 "Anomalous amplitude 𝛽₊ for helicities ++-"
 function 𝛽₊_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
-    -√8 * t(sx, E_M, E_P) * (t(sx, k1, k2) * s(sx, k3, E_M))^2
+    -√8 * t(sx, E₋, E₊) * (t(sx, k1, k2) * s(sx, k3, E₋))^2
 end
 
 "Anomalous amplitude 𝛽₊ for helicities +--"
 function 𝛽₊_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
-    -√8 * s(sx, E_M, E_P) * (t(sx, k1, E_P) * s(sx, k2, k3))^2
+    -√8 * s(sx, E₋, E₊) * (t(sx, k1, E₊) * s(sx, k2, k3))^2
 end
 
 "Anomalous amplitude 𝛽₋ for helicities +++"
 function 𝛽₋_ppp(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
-    -√8 * s(sx, E_M, E_P) * ((t(sx, k1, k2) * t(sx, k3, E_P))^2 +
-                             (t(sx, k1, k3) * t(sx, k2, E_P))^2 +
-                             (t(sx, k2, k3) * t(sx, k1, E_P))^2)
+    -√8 * s(sx, E₋, E₊) * ((t(sx, k1, k2) * t(sx, k3, E₊))^2 +
+                           (t(sx, k1, k3) * t(sx, k2, E₊))^2 +
+                           (t(sx, k2, k3) * t(sx, k1, E₊))^2)
 end
 
 "Anomalous amplitude 𝛽₋ for helicities ---"
 function 𝛽₋_mmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
-    -√8 * t(sx, E_M, E_P) * ((s(sx, k1, E_M) * s(sx, k2, k3))^2 +
-                             (s(sx, k2, E_M) * s(sx, k1, k3))^2 +
-                             (s(sx, k3, E_M) * s(sx, k1, k2))^2)
+    -√8 * t(sx, E₋, E₊) * ((s(sx, k1, E₋) * s(sx, k2, k3))^2 +
+                           (s(sx, k2, E₋) * s(sx, k1, k3))^2 +
+                           (s(sx, k3, E₋) * s(sx, k1, k2))^2)
 end
 
 
