@@ -3,6 +3,7 @@
 # FIXME: Isn't there a way to spell this out in code???
 
 
+"Error handling primitives to ease program invariant checking"
 module Errors
 
 export check
