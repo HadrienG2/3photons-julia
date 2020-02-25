@@ -212,9 +212,9 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
 
     # Calculate the parameters of the conformal transformation
     r = @SVector [ sum(q[coord, :]) for coord=1:4 ]
-    r_norm_2 = r[E]^2 - r[XYZ]⋅r[XYZ]  # FIXME: No squared norm func?
-    α = evgen.e_tot / r_norm_2
-    r_norm = √r_norm_2
+    r_norm² = r[E]^2 - r[XYZ]⋅r[XYZ]  # FIXME: No squared norm func?
+    α = evgen.e_tot / r_norm²
+    r_norm = √r_norm²
     β = 1 / (r_norm + r[E])
 
     # Perform the conformal transformation from Q's to output 4-momenta

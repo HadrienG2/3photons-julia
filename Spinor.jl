@@ -88,36 +88,36 @@ const E₋ = INCOMING_E₋
 const E₊ = INCOMING_E₊
 
 "Standard amplitude for helicities ++-"
-function 𝛼_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛼₍₊₊₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * s(sx, E₋, E₊) * s(sx, E₋, k3)^2 /
         (s(sx, E₋, k1) * s(sx, E₋, k2) * s(sx, E₊, k1) * s(sx, E₊, k2))
 end
 
 "Standard amplitude for helicities +--"
-function 𝛼_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛼₍₊₋₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * t(sx, E₋, E₊) * t(sx, E₊, k1)^2 /
         (t(sx, E₊, k2) * t(sx, E₊, k3) * t(sx, E₋, k2) * t(sx, E₋, k3))
 end
 
 "Anomalous amplitude 𝛽₊ for helicities ++-"
-function 𝛽₊_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛽₊₍₊₊₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * t(sx, E₋, E₊) * (t(sx, k1, k2) * s(sx, k3, E₋))^2
 end
 
 "Anomalous amplitude 𝛽₊ for helicities +--"
-function 𝛽₊_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛽₊₍₊₋₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * s(sx, E₋, E₊) * (t(sx, k1, E₊) * s(sx, k2, k3))^2
 end
 
 "Anomalous amplitude 𝛽₋ for helicities +++"
-function 𝛽₋_ppp(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛽₋₍₊₊₊₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * s(sx, E₋, E₊) * ((t(sx, k1, k2) * t(sx, k3, E₊))^2 +
                            (t(sx, k1, k3) * t(sx, k2, E₊))^2 +
                            (t(sx, k2, k3) * t(sx, k1, E₊))^2)
 end
 
 "Anomalous amplitude 𝛽₋ for helicities ---"
-function 𝛽₋_mmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛽₋₍₋₋₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * t(sx, E₋, E₊) * ((s(sx, k1, E₋) * s(sx, k2, k3))^2 +
                            (s(sx, k2, E₋) * s(sx, k1, k3))^2 +
                            (s(sx, k3, E₋) * s(sx, k1, k2))^2)
@@ -131,17 +131,17 @@ function 𝛼_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{Flo
     if helicities == MMM
         Complex(0.0)
     elseif helicities == MMP
-        𝛼_pmm(sx, 5, 3, 4)
+        𝛼₍₊₋₋₎(sx, 5, 3, 4)
     elseif helicities == MPM
-        𝛼_pmm(sx, 4, 3, 5)
+        𝛼₍₊₋₋₎(sx, 4, 3, 5)
     elseif helicities == MPP
-        𝛼_ppm(sx, 4, 5, 3)
+        𝛼₍₊₊₋₎(sx, 4, 5, 3)
     elseif helicities == PMM
-        𝛼_pmm(sx, 3, 4, 5)
+        𝛼₍₊₋₋₎(sx, 3, 4, 5)
     elseif helicities == PMP
-        𝛼_ppm(sx, 3, 5, 4)
+        𝛼₍₊₊₋₎(sx, 3, 5, 4)
     elseif helicities == PPM
-        𝛼_ppm(sx, 3, 4, 5)
+        𝛼₍₊₊₋₎(sx, 3, 4, 5)
     elseif helicities == PPP
         Complex(0.0)
     else
@@ -154,17 +154,17 @@ function 𝛽₊_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{
     if helicities == MMM
         Complex(0.0)
     elseif helicities == MMP
-        𝛽₊_pmm(sx, 5, 3, 4)
+        𝛽₊₍₊₋₋₎(sx, 5, 3, 4)
     elseif helicities == MPM
-        𝛽₊_pmm(sx, 4, 3, 5)
+        𝛽₊₍₊₋₋₎(sx, 4, 3, 5)
     elseif helicities == MPP
-        𝛽₊_ppm(sx, 4, 5, 3)
+        𝛽₊₍₊₊₋₎(sx, 4, 5, 3)
     elseif helicities == PMM
-        𝛽₊_pmm(sx, 3, 4, 5)
+        𝛽₊₍₊₋₋₎(sx, 3, 4, 5)
     elseif helicities == PMP
-        𝛽₊_ppm(sx, 3, 5, 4)
+        𝛽₊₍₊₊₋₎(sx, 3, 5, 4)
     elseif helicities == PPM
-        𝛽₊_ppm(sx, 3, 4, 5)
+        𝛽₊₍₊₊₋₎(sx, 3, 4, 5)
     elseif helicities == PPP
         Complex(0.0)
     else
@@ -175,7 +175,7 @@ end
 "Anomalous amplitude 𝛽₋ for given photon helicities"
 function 𝛽₋_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{Float}
     if helicities == MMM
-        𝛽₋_mmm(sx, 3, 4, 5)
+        𝛽₋₍₋₋₋₎(sx, 3, 4, 5)
     elseif helicities == MMP
         Complex(0.0)
     elseif helicities == MPM
@@ -189,7 +189,7 @@ function 𝛽₋_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{
     elseif helicities == PPM
         Complex(0.0)
     elseif helicities == PPP
-        𝛽₋_ppp(sx, 3, 4, 5)
+        𝛽₋₍₊₊₊₎(sx, 3, 4, 5)
     else
         throw(AssertionError("Unexpected helicities"))
     end

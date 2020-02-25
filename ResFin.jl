@@ -19,7 +19,8 @@ using ..ResCont: A, B₊, B₋, I_MX, m²_sums, NUM_RESULTS, ResultContribution,
 using LinearAlgebra: ⋅
 using StaticArrays: MMatrix, SMatrix, @MMatrix, @SMatrix
 
-export integrate_contrib!, finalize_results, merge_results!, ResultsBuilder
+export integrate_contrib!, finalize_results, merge_results!, ResultsBuilder,
+       SP₋, SP₊
 
 
 # === RESULTS ACCUMULATION ===
