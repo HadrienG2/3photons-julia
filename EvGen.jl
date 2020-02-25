@@ -39,8 +39,9 @@ struct EventGenerator
     "Weight of generated events"
     event_weight::Float
 
+    # FIXME: Need to specify SMatrix length to avoid type instability?
     "Incoming electron and positron momenta"
-    incoming_momenta::SMatrix{NUM_INCOMING, 4, Float}
+    incoming_momenta::SMatrix{NUM_INCOMING, 4, Float, NUM_INCOMING*4}
 end
 
 

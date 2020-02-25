@@ -71,11 +71,11 @@ end
 
 # === GRAM MATRIX ACCESSORS ===
 
-function s(sx::SpinorProducts, i::Int, j::Int)::Complex
+function s(sx::SpinorProducts, i::Int, j::Int)::Complex{Float}
     sx[i, j]
 end
 
-function t(sx::SpinorProducts, i::Int, j::Int)::Complex
+function t(sx::SpinorProducts, i::Int, j::Int)::Complex{Float}
     -conj(sx[i, j])
 end
 
@@ -88,36 +88,36 @@ const E_M = INCOMING_E_M
 const E_P = INCOMING_E_P
 
 "Standard amplitude for helicities ++-"
-function 𝛼_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+function 𝛼_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * s(sx, E_M, E_P) * s(sx, E_M, k3)^2 /
         (s(sx, E_M, k1) * s(sx, E_M, k2) * s(sx, E_P, k1) * s(sx, E_P, k2))
 end
 
 "Standard amplitude for helicities +--"
-function 𝛼_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+function 𝛼_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * t(sx, E_M, E_P) * t(sx, E_P, k1)^2 /
         (t(sx, E_P, k2) * t(sx, E_P, k3) * t(sx, E_M, k2) * t(sx, E_M, k3))
 end
 
 "Anomalous amplitude 𝛽₊ for helicities ++-"
-function 𝛽₊_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+function 𝛽₊_ppm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * t(sx, E_M, E_P) * (t(sx, k1, k2) * s(sx, k3, E_M))^2
 end
 
 "Anomalous amplitude 𝛽₊ for helicities +--"
-function 𝛽₊_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+function 𝛽₊_pmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * s(sx, E_M, E_P) * (t(sx, k1, E_P) * s(sx, k2, k3))^2
 end
 
 "Anomalous amplitude 𝛽₋ for helicities +++"
-function 𝛽₋_ppp(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+function 𝛽₋_ppp(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * s(sx, E_M, E_P) * ((t(sx, k1, k2) * t(sx, k3, E_P))^2 +
                              (t(sx, k1, k3) * t(sx, k2, E_P))^2 +
                              (t(sx, k2, k3) * t(sx, k1, E_P))^2)
 end
 
 "Anomalous amplitude 𝛽₋ for helicities ---"
-function 𝛽₋_mmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex
+function 𝛽₋_mmm(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
     -√8 * t(sx, E_M, E_P) * ((s(sx, k1, E_M) * s(sx, k2, k3))^2 +
                              (s(sx, k2, E_M) * s(sx, k1, k3))^2 +
                              (s(sx, k3, E_M) * s(sx, k1, k2))^2)
@@ -127,9 +127,9 @@ end
 # External interface from helicities enum
 
 "Standard amplitude for given photon helicities"
-function 𝛼_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex
+function 𝛼_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{Float}
     if helicities == MMM
-        Complex(0)
+        Complex(0.0)
     elseif helicities == MMP
         𝛼_pmm(sx, 5, 3, 4)
     elseif helicities == MPM
@@ -143,16 +143,16 @@ function 𝛼_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex
     elseif helicities == PPM
         𝛼_ppm(sx, 3, 4, 5)
     elseif helicities == PPP
-        Complex(0)
+        Complex(0.0)
     else
         throw(AssertionError("Unexpected helicities"))
     end
 end
 
 "Anomalous amplitude 𝛽₊ for given photon helicities"
-function 𝛽₊_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex
+function 𝛽₊_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{Float}
     if helicities == MMM
-        Complex(0)
+        Complex(0.0)
     elseif helicities == MMP
         𝛽₊_pmm(sx, 5, 3, 4)
     elseif helicities == MPM
@@ -166,28 +166,28 @@ function 𝛽₊_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex
     elseif helicities == PPM
         𝛽₊_ppm(sx, 3, 4, 5)
     elseif helicities == PPP
-        Complex(0)
+        Complex(0.0)
     else
         throw(AssertionError("Unexpected helicities"))
     end
 end
 
 "Anomalous amplitude 𝛽₋ for given photon helicities"
-function 𝛽₋_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex
+function 𝛽₋_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{Float}
     if helicities == MMM
         𝛽₋_mmm(sx, 3, 4, 5)
     elseif helicities == MMP
-        Complex(0)
+        Complex(0.0)
     elseif helicities == MPM
-        Complex(0)
+        Complex(0.0)
     elseif helicities == MPP
-        Complex(0)
+        Complex(0.0)
     elseif helicities == PMM
-        Complex(0)
+        Complex(0.0)
     elseif helicities == PMP
-        Complex(0)
+        Complex(0.0)
     elseif helicities == PPM
-        Complex(0)
+        Complex(0.0)
     elseif helicities == PPP
         𝛽₋_ppp(sx, 3, 4, 5)
     else
