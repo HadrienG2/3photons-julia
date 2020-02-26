@@ -19,8 +19,8 @@ using ..ResCont: A, B₊, B₋, I_MX, m²_sums, NUM_RESULTS, ResultContribution,
 using LinearAlgebra: ⋅
 using StaticArrays: MMatrix, SMatrix, @MMatrix, @SMatrix
 
-export integrate_contrib!, finalize_results, merge_results!, ResultsBuilder,
-       SP₋, SP₊
+export integrate_contrib!, finalize_results, merge_results!, print_eric,
+       print_fawzi, ResultsBuilder, SP₋, SP₊
 
 
 # === RESULTS ACCUMULATION ===
@@ -306,6 +306,110 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
         inc_ss₋,
         cfg,
     )
+end
+
+
+"Display results using Eric's (???) parametrization"
+function print_eric(results::FinalResults)
+    @enforce (NUM_SPINS == 2) "This code assumes particles of spin +/-1"
+    @enforce (NUM_RESULTS == 5) "This code assumes a 5-results configuration"
+
+    cfg = results._cfg
+    spm² = results.spm²
+
+    µ_th = cfg.br_e₊_e₋ * cfg.convers / (8 * 9 * 5 * π^2 * cfg.m_Z⁰ * cfg.g_Z⁰)
+    λ₀₍₋₎ = (spm²[SP₋, B₋] - spm²[SP₋, B₊]) / 2
+    λ₀₍₊₎ = (spm²[SP₊, B₋] - spm²[SP₊, B₊]) / 2
+    µ₀₍₋₎ = (spm²[SP₋, B₋] + spm²[SP₋, B₊]) / 2
+    µ₀₍₊₎ = (spm²[SP₊, B₋] + spm²[SP₊, B₊]) / 2
+    µ_num = (spm²[SP₋, B₊] + spm²[SP₋, B₋] + spm²[SP₊, B₊] + spm²[SP₊, B₋]) / 4
+
+    println()
+    println("       :        -          +")
+    # TODO: 6 digits after dec. point on both sides
+    println("sigma0  : $(spm²[SP₋, A] / 2) | $(spm²[SP₊, A] / 2)")
+    # TODO: 5 digits after dec. point | 4 digits after dec. point
+    println("alpha0  : $(spm²[SP₋, I_MX] / 2) | $(spm²[SP₊, I_MX] / 2)")
+    println("beta0   : $(spm²[SP₋, R_MX] / 2) | $(spm²[SP₊, R_MX] / 2)")
+    # TODO: 4 digits after dec. point on both sides
+    println("lambda0 : $(λ₀₍₋₎) | $(λ₀₍₊₎)")
+    # TODO: 4 digits after dec. point | 5 digits after dec. point
+    println("mu0     : $(µ₀₍₋₎) | $(µ₀₍₊₎)")
+    # TODO: 5 digits after dec. point on both sides
+    println("mu/lamb : $(µ₀₍₋₎ / λ₀₍₋₎) | $(µ₀₍₊₎ / λ₀₍₊₎)")
+    # TODO: 4 digits after dec. point
+    println("mu (num): $(µ_num)");
+    # TODO: 6 digits after dec. point
+    println("rapport : $(µ_num / µ_th)")
+    # TODO: 4 digits after dec. point
+    println("mu (th) : $(µ_th)")
+end
+
+
+"""
+Display Fawzi's (???) analytical results and compare them to the Monte Carlo
+results that we have computed
+"""
+function print_fawzi(results::FinalResults)
+    @enforce (NUM_SPINS == 2) "This code assumes particles of spin +/-1"
+    @enforce (NUM_RESULTS == 5) "This code assumes a 5-results configuration"
+
+    cfg = results._cfg
+    ev_cut = cfg.event_cut
+    spm² = results.spm²
+    vars = results.vars
+
+    mre = cfg.m_Z⁰ / cfg.e_tot
+    gre = cfg.g_Z⁰ * cfg.m_Z⁰ / cfg.e_tot^2
+    x = 1 - mre^2
+    sdz = complex(x, -gre) / (x^2 + gre^2)
+    δ = (1 - ev_cut.b_cut) / 2
+    ε = 2 * ev_cut.e_min / cfg.e_tot
+    bra = cfg.m_Z⁰ / (3 * 6 * π^3 * 16 * 120)
+    σ = 12π / cfg.m_Z⁰^2 * cfg.br_e₊_e₋ * cfg.g_Z⁰ * bra / cfg.e_tot^2 *
+        (cfg.e_tot / cfg.m_Z⁰)^8 * abs2(sdz) * cfg.convers
+
+    f₁ = 1 - 15ε^4 - 9/7 * (1 - 70ε^4)δ^2 + 6/7 * (1 + 70ε^4)δ^3
+    g₁ = 1 - 30ε^4 - 9/7 * (1 - 70ε^4)δ - 90ε^4 * δ^2 - 1/7 * (1 - 420ε^4)δ^3
+    g₂ = 1 - 25ε^4 - 6/7 * (1 - 70ε^4)δ - 3/7 * (1 + 210ε^4)δ^2 -
+         8/21 * (1 - 52.5ε^4)δ^3
+    g₃ = 1 - 195/11 * ε^4 - 18/77 * (1 - 7ε^4)δ - 9/11 * (9/7 - 70ε^4)δ^2 -
+         8/11 * (1 - 105/11 * ε^4)δ^3
+
+    ff = f₁ * (1 - ev_cut.sin_cut^3)
+    gg = g₁ - 27/16 * g₂ * ev_cut.sin_cut + 11/16 * g₃ * ev_cut.sin_cut^3
+
+    σ₊ = σ * (ff + 2gg)
+    σ₋ = σ₊ + 2σ * gg
+
+    mc₊ = (spm²[SP₋, B₊] + spm²[SP₊, B₊]) / 4
+    mc₋ = (spm²[SP₋, B₋] + spm²[SP₊, B₋]) / 4
+    incr₊ = √((spm²[SP₋, B₊] * vars[SP₋, B₊])^2 +
+              (spm²[SP₊, B₊] * vars[SP₊, B₊])^2) /
+            abs(spm²[SP₋, B₊] + spm²[SP₊, B₊])
+    incr₋ = √((spm²[SP₋, B₋] * vars[SP₋, B₋])^2 +
+              (spm²[SP₊, B₋] * vars[SP₊, B₋])^2) /
+            abs(spm²[SP₋, B₋] + spm²[SP₊, B₋])
+
+    println()
+    println("s (pb) :   Sig_cut_Th    Sig_Th      Rapport")
+    println("       :   Sig_Num")
+    println("       :   Ecart_relatif  Incertitude")
+    println()
+    # TODO: {:.5} | {:.5} | {:.6}
+    println("s+(pb) : $(σ₊) | $(3σ) | $(σ₊ / (3σ))")
+    # TODO: {:.5}
+    println("       : $(mc₊)")
+    # TODO: {:.6} | {:.8} | {:.2}
+    println("       : $(mc₊/σ₊ - 1) | $(incr₊) | $((mc₊/σ₊ - 1) / incr₊)")
+    println()
+    # TODO: {:.5} | {:.4} | {:.6}
+    println("s-(pb) : $(σ₋) | $(5σ) | $(σ₋ / (5σ))")
+    # TODO: {:.5}
+    println("       : $(mc₋)")
+    # TODO: {:.6} | {:.9} | {:.2}
+    println("       : $(mc₋/σ₋ - 1) | $(incr₋) | $((mc₋/σ₋ - 1) / incr₋)")
+    println()
 end
 
 end

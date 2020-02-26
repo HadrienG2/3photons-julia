@@ -45,7 +45,7 @@ struct Configuration
     sin²_w::Float
     
     "Branching factor from Z to e+/e-"
-    br_ep_em::Float
+    br_e₊_e₋::Float
     
     "Beta + (???)"
     𝛽₊::Float
@@ -120,7 +120,7 @@ function Configuration(file_name::AbstractString; jit_warmup::Bool=false)
             next_entry!(Float),      # m_Z⁰
             next_entry!(Float),      # g_Z⁰
             next_entry!(Float),      # sin²_w
-            next_entry!(Float),      # br_ep_em
+            next_entry!(Float),      # br_e₊_e₋
             next_entry!(Float),      # 𝛽₊
             next_entry!(Float),      # 𝛽₋
             next_entry!(Int32),      # n_bin
@@ -176,7 +176,7 @@ function print(c::Configuration)
     println("oParam.MZ0     : ", c.m_Z⁰)
     println("oParam.GZ0     : ", c.g_Z⁰)
     println("SIN2W          : ", c.sin²_w)
-    println("BREPEM         : ", c.br_ep_em)
+    println("BREPEM         : ", c.br_e₊_e₋)
     println("BETAPLUS       : ", c.𝛽₊)
     println("BETAMOINS      : ", c.𝛽₋)
     println("NBIN           : ", c.n_bin)
