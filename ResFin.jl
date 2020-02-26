@@ -396,19 +396,13 @@ function print_fawzi(results::FinalResults)
     println("       :   Sig_Num")
     println("       :   Ecart_relatif  Incertitude")
     println()
-    # TODO: {:.5} | {:.5} | {:.6}
-    println("s+(pb) : $(σ₊) | $(3σ) | $(σ₊ / (3σ))")
-    # TODO: {:.5}
-    println("       : $(mc₊)")
-    # TODO: {:.6} | {:.8} | {:.2}
-    println("       : $(mc₊/σ₊ - 1) | $(incr₊) | $((mc₊/σ₊ - 1) / incr₊)")
+    @printf("s+(pb) : %.5f | %.5f | %.6f\n", σ₊, 3σ, σ₊/(3σ))
+    @printf("       : %.5f\n", mc₊)
+    @printf("       : %.6f | %.8f | %.2f\n", mc₊/σ₊-1, incr₊, (mc₊/σ₊-1)/incr₊)
     println()
-    # TODO: {:.5} | {:.4} | {:.6}
-    println("s-(pb) : $(σ₋) | $(5σ) | $(σ₋ / (5σ))")
-    # TODO: {:.5}
-    println("       : $(mc₋)")
-    # TODO: {:.6} | {:.9} | {:.2}
-    println("       : $(mc₋/σ₋ - 1) | $(incr₋) | $((mc₋/σ₋ - 1) / incr₋)")
+    @printf("s-(pb) : %.5f | %.4f | %.6f\n", σ₋, 5σ, σ₋/(5σ))
+    @printf("       : %.5f\n", mc₋)
+    @printf("       : %.6f | %.9f | %.2f\n", mc₋/σ₋-1, incr₋, (mc₋/σ₋-1)/incr₋)
     println()
 end
 
