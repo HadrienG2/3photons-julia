@@ -68,7 +68,7 @@ function random_vector!(rng::RanfGenerator, ::Val{N})::SVector{N, Float} where N
 
     # In principle, we could reuse the remaining numbers in the active round, in
     # practice it costs more than it helps...
-    if rng.index < N
+    if rng.index <= N
         reset!(rng)
         rng.index = round_size + 1
     end

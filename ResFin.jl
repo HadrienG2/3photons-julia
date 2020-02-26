@@ -17,7 +17,7 @@ using ..Numeric: Float
 using ..ResCont: A, B₊, B₋, I_MX, m²_sums, NUM_RESULTS, ResultContribution,
                  ResultVector, R_MX
 using LinearAlgebra: ⋅
-using StaticArrays: MMatrix, SMatrix, @MMatrix, @SMatrix
+using StaticArrays: MMatrix, SMatrix, SVector, @MMatrix, @SMatrix, @SVector
 
 export integrate_contrib!, finalize_results, merge_results!, print_eric,
        print_fawzi, ResultsBuilder, SP₋, SP₊
@@ -227,10 +227,17 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
     n_ev = cfg.num_events
 
     # Compute the relative uncertainties for one spin
-    for (v_spm², v_var) ∈ zip(builder.spm², builder.vars)
-        v_var = (v_var - v_spm²^2 / n_ev) / (n_ev - 1)
-        v_var = √(v_var / n_ev) / abs(v_spm² / n_ev)
-    end
+    #
+    # FIXME: Why doesn't (v_spm², v_var) ∈ zip(builder.spm², builder.vars) work?
+    #
+    vars_1spin = @SVector [
+        begin
+            v_spm² = builder.spm²[i]
+            v_var = (builder.vars[i] - v_spm²^2 / n_ev) / (n_ev - 1)
+            √(v_var / n_ev) / abs(v_spm² / n_ev)
+        end
+        for i=1:NUM_RESULTS
+    ]
 
     # Copy for the opposite spin
     spm² = @MMatrix [
@@ -238,7 +245,7 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
         for _spin=1:NUM_SPINS, res=1:NUM_RESULTS
     ]
     vars = @SMatrix [
-        builder.vars[res]
+        vars_1spin[res]
         for _spin=1:NUM_SPINS, res=1:NUM_RESULTS
     ]
 
@@ -266,7 +273,7 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
     𝛽_min = √((spm²[SP₋, A] + spm²[SP₊, A]) / (spm²[SP₋, B₊] + spm²[SP₊, B₊]))
 
     ss_denom = spm²[SP₋, A] + spm²[SP₊, A]
-    ss_norm = 1 / (2 + √ss_denom)
+    ss_norm = 1 / (2 * √ss_denom)
 
     ss₊ = (spm²[SP₋, B₊] + spm²[SP₊, B₊]) * ss_norm
     ss₋ = (spm²[SP₋, B₋] + spm²[SP₊, B₋]) * ss_norm
@@ -297,9 +304,9 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
         spm²,
         vars,
         σ,
+        prec,
         variance,
         𝛽_min,
-        prec,
         ss₊,
         inc_ss₊,
         ss₋,
