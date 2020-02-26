@@ -18,7 +18,7 @@ export RandomGenerator, random!
 
 # Generated random numbers will have a granularity of 1/MODULO
 const Integer = Int32
-const MODULO = 1000 * 1000 * 1000
+const MODULO = 1_000_000_000
 const INV_MODULO = 1 / MODULO
 
 
