@@ -17,6 +17,7 @@ using ..Numeric: Float
 using ..ResCont: A, B₊, B₋, I_MX, m²_sums, NUM_RESULTS, ResultContribution,
                  ResultVector, R_MX
 using LinearAlgebra: ⋅
+using Printf: @printf
 using StaticArrays: MMatrix, SMatrix, SVector, @MMatrix, @SMatrix, @SVector
 
 export integrate_contrib!, finalize_results, merge_results!, print_eric,
@@ -333,23 +334,15 @@ function print_eric(results::FinalResults)
 
     println()
     println("       :        -          +")
-    # TODO: 6 digits after dec. point on both sides
-    println("sigma0  : $(spm²[SP₋, A] / 2) | $(spm²[SP₊, A] / 2)")
-    # TODO: 5 digits after dec. point | 4 digits after dec. point
-    println("alpha0  : $(spm²[SP₋, I_MX] / 2) | $(spm²[SP₊, I_MX] / 2)")
-    println("beta0   : $(spm²[SP₋, R_MX] / 2) | $(spm²[SP₊, R_MX] / 2)")
-    # TODO: 4 digits after dec. point on both sides
-    println("lambda0 : $(λ₀₍₋₎) | $(λ₀₍₊₎)")
-    # TODO: 4 digits after dec. point | 5 digits after dec. point
-    println("mu0     : $(µ₀₍₋₎) | $(µ₀₍₊₎)")
-    # TODO: 5 digits after dec. point on both sides
-    println("mu/lamb : $(µ₀₍₋₎ / λ₀₍₋₎) | $(µ₀₍₊₎ / λ₀₍₊₎)")
-    # TODO: 4 digits after dec. point
-    println("mu (num): $(µ_num)");
-    # TODO: 6 digits after dec. point
-    println("rapport : $(µ_num / µ_th)")
-    # TODO: 4 digits after dec. point
-    println("mu (th) : $(µ_th)")
+    @printf("sigma0  : %.6f | %.6f\n", spm²[SP₋, A]/2, spm²[SP₊, A]/2)
+    @printf("alpha0  : %.5e | %.4e\n", spm²[SP₋, I_MX]/2, spm²[SP₊, I_MX]/2)
+    @printf("beta0   : %.0f | %.0f\n", spm²[SP₋, R_MX]/2, spm²[SP₊, R_MX]/2)
+    @printf("lambda0 : %.4f | %.4f\n", λ₀₍₋₎, λ₀₍₊₎)
+    @printf("mu0     : %.4f | %.5f\n", µ₀₍₋₎, µ₀₍₊₎)
+    @printf("mu/lamb : %.5f | %.5f\n", µ₀₍₋₎/λ₀₍₋₎, µ₀₍₊₎/λ₀₍₊₎)
+    @printf("mu (num): %.4f\n", µ_num)
+    @printf("rapport : %.6f\n", µ_num/µ_th)
+    @printf("mu (th) : %.4f\n", µ_th)
 end
 
 
