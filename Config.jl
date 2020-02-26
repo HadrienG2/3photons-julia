@@ -11,6 +11,7 @@ import IterTools
 using ..Errors: @enforce
 using ..EvCut: EventCut
 using ..Numeric: Float
+using Printf: @printf
 
 export Configuration
 
@@ -169,16 +170,16 @@ function print(c::Configuration)
     println("oCutpar.ACUT   : ", c.event_cut.a_cut)
     println("oCutpar.BCUT   : ", c.event_cut.b_cut)
     println("oCutpar.EMIN   : ", c.event_cut.e_min)
-    println("oCutpar.SINCUT : ", c.event_cut.sin_cut)
+    @printf("oCutpar.SINCUT : %.0f\n", c.event_cut.sin_cut)
     println("ALPHA          : ", c.𝛼)
     println("ALPHAZ         : ", c.𝛼_Z)
-    println("CONVERS        : ", c.convers)
+    @printf("CONVERS        : %.0f\n", c.convers)
     println("oParam.MZ0     : ", c.m_Z⁰)
     println("oParam.GZ0     : ", c.g_Z⁰)
     println("SIN2W          : ", c.sin²_w)
     println("BREPEM         : ", c.br_e₊_e₋)
-    println("BETAPLUS       : ", c.𝛽₊)
-    println("BETAMOINS      : ", c.𝛽₋)
+    @printf("BETAPLUS       : %.0f\n", c.𝛽₊)
+    @printf("BETAMOINS      : %.0f\n", c.𝛽₋)
     println("NBIN           : ", c.n_bin)
     println("oParam.IMPR    : ", c.impr)
     println("PLOT           : ", c.plot)
