@@ -78,7 +78,7 @@ function EventGenerator(e_tot::Float; jit_warmup::Bool=false)
 
     # All generated events will have the same weight: pre-compute it
     ln_weight = (2 * NUM_OUTGOING - 4) * log(e_tot) + z
-    @enforce (ln_weight >= -180 && ln_weight < 174)
+    @enforce (ln_weight ≥ -180 && ln_weight < 174)
     event_weight = exp(ln_weight)
 
     # Compute the incoming particle momenta
