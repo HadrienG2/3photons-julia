@@ -280,15 +280,15 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
     ss₋ = (spm²[SP₋, B₋] + spm²[SP₊, B₋]) * ss_norm
 
     inc_ss_common =
-        √((spm²[SP₋, A] * vars[SP₋, A])^2 + (spm²[SP₊, A] * vars[SP₊, A])^2) /
+        √((spm²[SP₋, A]*vars[SP₋, A])^2 + (spm²[SP₊, A]*vars[SP₊, A])^2) /
             (2 * abs(ss_denom))
 
     inc_ss₊ =
-        √((spm²[SP₋, B₊] * vars[SP₋, B₊])^2 + (spm²[SP₊, B₊] * vars[SP₊, B₊])^2) /
+        √((spm²[SP₋, B₊]*vars[SP₋, B₊])^2 + (spm²[SP₊, B₊]*vars[SP₊, B₊])^2) /
             abs(spm²[SP₋, B₊] + spm²[SP₊, B₊]) +
         inc_ss_common
     inc_ss₋ =
-        √((spm²[SP₋, B₋] * vars[SP₋, B₋])^2 + (spm²[SP₊, B₋] * vars[SP₊, B₋])^2) /
+        √((spm²[SP₋, B₋]*vars[SP₋, B₋])^2 + (spm²[SP₊, B₋]*vars[SP₊, B₋])^2) /
             abs(spm²[SP₋, B₋] + spm²[SP₊, B₋]) +
         inc_ss_common
 
