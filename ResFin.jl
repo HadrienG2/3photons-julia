@@ -16,7 +16,7 @@ using ..EvGen: NUM_OUTGOING, NUM_SPINS
 using ..Numeric: Float
 using ..ResCont: A, B₊, B₋, I_MX, m²_sums, NUM_RESULTS, ResultContribution,
                  ResultVector, R_MX
-using LinearAlgebra: ⋅
+using LinearAlgebra: ⋅, norm
 using Printf: @printf
 using StaticArrays: MMatrix, SMatrix, SVector, @MMatrix, @SMatrix, @SVector
 
@@ -271,26 +271,20 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
     spm²[:, R_MX] *= builder.ecart_pic
 
     # Compute other parts of the result
-    𝛽_min = √((spm²[SP₋, A] + spm²[SP₊, A]) / (spm²[SP₋, B₊] + spm²[SP₊, B₊]))
+    𝛽_min = √(sum(spm²[:, A]) / sum(spm²[:, B₊]))
 
-    ss_denom = spm²[SP₋, A] + spm²[SP₊, A]
+    ss_denom = sum(spm²[:, A])
     ss_norm = 1 / (2 * √ss_denom)
 
-    ss₊ = (spm²[SP₋, B₊] + spm²[SP₊, B₊]) * ss_norm
-    ss₋ = (spm²[SP₋, B₋] + spm²[SP₊, B₋]) * ss_norm
+    ss₊ = sum(spm²[:, B₊]) * ss_norm
+    ss₋ = sum(spm²[:, B₋]) * ss_norm
 
-    inc_ss_common =
-        √((spm²[SP₋, A]*vars[SP₋, A])^2 + (spm²[SP₊, A]*vars[SP₊, A])^2) /
-            (2 * abs(ss_denom))
+    inc_ss_common = norm(spm²[:, A] .* vars[:, A]) / (2 * abs(ss_denom))
 
-    inc_ss₊ =
-        √((spm²[SP₋, B₊]*vars[SP₋, B₊])^2 + (spm²[SP₊, B₊]*vars[SP₊, B₊])^2) /
-            abs(spm²[SP₋, B₊] + spm²[SP₊, B₊]) +
-        inc_ss_common
-    inc_ss₋ =
-        √((spm²[SP₋, B₋]*vars[SP₋, B₋])^2 + (spm²[SP₊, B₋]*vars[SP₊, B₋])^2) /
-            abs(spm²[SP₋, B₋] + spm²[SP₊, B₋]) +
-        inc_ss_common
+    inc_ss₊ = norm(spm²[:, B₊] .* vars[:, B₊]) / abs(sum(spm²[:, B₊])) +
+              inc_ss_common
+    inc_ss₋ = norm(spm²[:, B₋] .* vars[:, B₋]) / abs(sum(spm²[:, B₋])) +
+              inc_ss_common
 
     variance = (builder.variance - builder.σ^2 / n_ev) / (n_ev - 1)
     prec = √(variance / n_ev) / abs(builder.σ / n_ev)
@@ -351,7 +345,6 @@ Display Fawzi's (???) analytical results and compare them to the Monte Carlo
 results that we have computed
 """
 function print_fawzi(results::FinalResults)
-    @enforce (NUM_SPINS == 2) "This code assumes particles of spin +/-1"
     @enforce (NUM_RESULTS == 5) "This code assumes a 5-results configuration"
 
     cfg = results._cfg
@@ -382,14 +375,10 @@ function print_fawzi(results::FinalResults)
     σ₊ = σ * (ff + 2gg)
     σ₋ = σ₊ + 2σ * gg
 
-    mc₊ = (spm²[SP₋, B₊] + spm²[SP₊, B₊]) / 4
-    mc₋ = (spm²[SP₋, B₋] + spm²[SP₊, B₋]) / 4
-    incr₊ = √((spm²[SP₋, B₊] * vars[SP₋, B₊])^2 +
-              (spm²[SP₊, B₊] * vars[SP₊, B₊])^2) /
-            abs(spm²[SP₋, B₊] + spm²[SP₊, B₊])
-    incr₋ = √((spm²[SP₋, B₋] * vars[SP₋, B₋])^2 +
-              (spm²[SP₊, B₋] * vars[SP₊, B₋])^2) /
-            abs(spm²[SP₋, B₋] + spm²[SP₊, B₋])
+    mc₊ = sum(spm²[:, B₊]) / 4
+    mc₋ = sum(spm²[:, B₋]) / 4
+    incr₊ = norm(spm²[:, B₊] .* vars[:, B₊]) / abs(sum(spm²[:, B₊]))
+    incr₋ = norm(spm²[:, B₋] .* vars[:, B₋]) / abs(sum(spm²[:, B₋]))
 
     println()
     println("s (pb) :   Sig_cut_Th    Sig_Th      Rapport")

@@ -29,8 +29,8 @@ end
 function Couplings(cfg::Configuration)
     e² = 4π * cfg.𝛼
     e²_Z = 4π * cfg.𝛼_Z
-    cos²_w = 1. - cfg.sin²_w
-    g_𝛽 = -√(e²_Z / (4 * cos²_w * cfg.sin²_w)) / cfg.m_Z⁰^4
+    cos²_w = 1 - cfg.sin²_w
+    g_𝛽 = -√(e²_Z / (4cos²_w * cfg.sin²_w)) / cfg.m_Z⁰^4
 
     # FIXME: Isn't there any way to say which field we are talking about?
     Couplings(

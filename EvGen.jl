@@ -68,16 +68,16 @@ function EventGenerator(e_tot::Float; jit_warmup::Bool=false)
     end
     z = (NUM_OUTGOING-1) * log(π/2)  # Replaces Z[INP-1] in the original code
     for k = 2:NUM_OUTGOING-1
-        z -= 2 * log(k - 1)
+        z -= 2 * log(k-1)
     end
-    z -= log(NUM_OUTGOING - 1)
+    z -= log(NUM_OUTGOING-1)
 
     # NOTE: The check on total energy is gone, because we only generate massless
     #       photons and so the total energy will always be enough.
     #       Counting of nonzero masses is also gone because it was unused.
 
     # All generated events will have the same weight: pre-compute it
-    ln_weight = (2 * NUM_OUTGOING - 4) * log(e_tot) + z
+    ln_weight = (2*NUM_OUTGOING - 4) * log(e_tot) + z
     @enforce (ln_weight ≥ -180 && ln_weight < 174)
     event_weight = exp(ln_weight)
 
@@ -156,44 +156,41 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Flo
     # Generate the basic random parameters of the particles
     # (This code is convoluted because it replicates the RNG call order of the
     # original 3photons program, which itself isn't so straightforward)
-    cos_θ_idx = 1
-    φ_idx = 2
-    exp_min_e_idx = 3
     params = @SMatrix [
-        if coord == cos_θ_idx
+        if row == 1
             2*random!(rng) - 1
-        elseif coord == φ_idx
+        elseif row == 2
             2π * random!(rng)
-        elseif coord == exp_min_e_idx
+        elseif row == 3
             random!(rng) * random!(rng)
         else
-            throw(AssertionError("Unexpected coordinate"))
+            throw(AssertionError("Unexpected parameter"))
         end
-        for coord=1:3, _par=1:NUM_OUTGOING
+        for row=1:3, _part=1:NUM_OUTGOING
     ]
-    cos_θ = params[cos_θ_idx, :]
-    φ = params[φ_idx, :]
-    exp_min_e = params[exp_min_e_idx, :]
+    cos_θ = params[1, :]
+    φ = params[2, :]
+    exp_min_e = params[3, :]
 
     # Compute the outgoing momenta
     # NOTE: Unlike Rust, Julia needs manual sincos optimization here
     sincos_φ = sincos.(φ)
     sin_θ = sqrt.(1 .- cos_θ.^2)
-    energy = -log.(exp_min_e .+ eps(Float))
+    energy = -log.(nextfloat.(exp_min_e))
     @SMatrix [
-        energy[par] *
+        energy[part] *
             if coord == X
-                sin_θ[par] * sincos_φ[par][1]
+                sin_θ[part] * sincos_φ[part][1]
             elseif coord == Y
-                sin_θ[par] * sincos_φ[par][2]
+                sin_θ[part] * sincos_φ[part][2]
             elseif coord == Z
-                cos_θ[par]
+                cos_θ[part]
             elseif coord == E
                 1
             else
                 throw(AssertionError("Unexpected coordinate"))
             end
-        for coord=1:4, par=1:NUM_OUTGOING
+        for coord=1:4, part=1:NUM_OUTGOING
     ]
 end
 

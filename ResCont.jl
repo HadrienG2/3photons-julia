@@ -60,7 +60,7 @@ function ResultContribution(couplings::Couplings, event::Event)
     𝛼_amps = map(hel-> 𝛼_amp(spinor, hel) * couplings.g_𝛼, hels)
     𝛽₊_amps = map(hel -> 𝛽₊_amp(spinor, hel) * couplings.g_𝛽₊, hels)
     𝛽₋_amps = map(hel -> 𝛽₋_amp(spinor, hel) * couplings.g_𝛽₋, hels)
-    mixed_amps = 2 .* 𝛼_amps .* conj(𝛽₊_amps)
+    mixed_amps = 2(𝛼_amps .* conj(𝛽₊_amps))
 
     # Compute the matrix elements
     @SMatrix [
@@ -77,7 +77,7 @@ function ResultContribution(couplings::Couplings, event::Event)
         else
             throw(AssertionError("Unexpected contribution"))
         end
-        for contrib=A:I_MX, hel=1:NUM_HELICITIES
+        for contrib=1:NUM_RESULTS, hel=1:NUM_HELICITIES
     ]
 end
 

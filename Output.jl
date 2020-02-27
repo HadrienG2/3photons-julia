@@ -17,6 +17,7 @@ using ..Errors: @enforce
 using ..Numeric: Float
 using ..ResCont: A, B₊, B₋, I_MX, NUM_RESULTS, R_MX
 using ..ResFin: FinalResults, NUM_SPINS, print_eric, print_fawzi, SP₋, SP₊
+using LinearAlgebra: norm
 using Printf: @sprintf
 
 export dump_results
@@ -123,9 +124,8 @@ function dump_results(cfg::Configuration,
             writeln(dat_file)
         end
         for k=1:NUM_RESULTS
-            tmp₁ = res.spm²[SP₋, k] + res.spm²[SP₊, k]
-            tmp₂ = √((res.spm²[SP₋, k]*res.vars[SP₋, k])^2 +
-                     (res.spm²[SP₊, k]*res.vars[SP₊, k])^2)
+            tmp₁ = sum(res.spm²[:, k])
+            tmp₂ = norm(res.spm²[:, k] .* res.vars[:, k])
             writeln(
                 dat_file,
                 # FIXME: Should honor decimals precision here, but see above
@@ -146,13 +146,13 @@ function dump_results(cfg::Configuration,
         @enforce (NUM_RESULTS == 5) "This is specific to our 5-results setup"
 
         write(cum_dat_file, timestamp*"\n")
-        res₁ = res.spm²[SP₋, A] + res.spm²[SP₊, A]
-        res₂ = (res.spm²[SP₋, B₊] + res.spm²[SP₊, B₊]) * cfg.𝛽₊^2
-        res₃ = (res.spm²[SP₋, B₋] + res.spm²[SP₊, B₋]) * cfg.𝛽₋^2
-        res₄ = (res.spm²[SP₋, R_MX] + res.spm²[SP₊, R_MX]) * cfg.𝛽₊
+        res₁ = sum(res.spm²[:, A])
+        res₂ = sum(res.spm²[:, B₊]) * cfg.𝛽₊^2
+        res₃ = sum(res.spm²[:, B₋]) * cfg.𝛽₋^2
+        res₄ = sum(res.spm²[:, R_MX]) * cfg.𝛽₊
         avg = (res₁ + res₂ + res₃ + res₄) / 4
-        write(cum_dat_file, "$(cfg.e_tot) $(res₁/4) $(res₂/4) $(res₃/4) ")
-        write(cum_dat_file, "$(res₄/4) $(avg) $(res.σ)\n")
+        write(cum_dat_file, "$(cfg.e_tot) $(res₁/4) $(res₂/4) $(res₃/4) "*
+                            "$(res₄/4) $(avg) $(res.σ)\n")
     end
 end
 
