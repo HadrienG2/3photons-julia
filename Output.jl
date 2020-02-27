@@ -15,7 +15,7 @@ import Dates
 using ..Config: Configuration
 using ..Numeric: Float
 using ..ResCont: NUM_RESULTS
-using ..ResFin: FinalResults, NUM_SPINS, print_eric, print_fawzi
+using ..ResFin: FinalResults, NUM_SPINS, print_eric, print_fawzi, SP₋, SP₊
 using Printf: @sprintf
 
 export dump_results
@@ -121,8 +121,20 @@ function dump_results(cfg::Configuration,
             end
             writeln(dat_file)
         end
-        # TODO: Finish translating the program
-        throw(AssertionError("Not implemented yet"))
+        for k=1:NUM_RESULTS
+            tmp1 = res.spm²[SP₋, k] + res.spm²[SP₊, k]
+            tmp2 = √((res.spm²[SP₋, k]*res.vars[SP₋, k])^2 +
+                     (res.spm²[SP₊, k]*res.vars[SP₊, k])^2)
+            writeln(
+                dat_file,
+                # FIXME: Should honor decimals precision here, but see above
+                @sprintf("  %3d%15.7e%15.7e%15.7e",
+                         k,
+                         tmp1/4,
+                         tmp2/4,
+                         tmp2/abs(tmp1))
+            )
+        end
     end
     
     # Append the results of this run to a cumulative file
