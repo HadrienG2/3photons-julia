@@ -1,5 +1,5 @@
-# Depends on Config.jl, Numeric.jl, ResCont.jl and ResFin.jl being include-d
-# beforehand
+# Depends on Config.jl, Errors.jl, Numeric.jl, ResCont.jl and ResFin.jl being
+# include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -13,8 +13,9 @@ module Output
 import Dates
 
 using ..Config: Configuration
+using ..Errors: @enforce
 using ..Numeric: Float
-using ..ResCont: NUM_RESULTS
+using ..ResCont: A, B₊, B₋, I_MX, NUM_RESULTS, R_MX
 using ..ResFin: FinalResults, NUM_SPINS, print_eric, print_fawzi, SP₋, SP₊
 using Printf: @sprintf
 
@@ -122,17 +123,17 @@ function dump_results(cfg::Configuration,
             writeln(dat_file)
         end
         for k=1:NUM_RESULTS
-            tmp1 = res.spm²[SP₋, k] + res.spm²[SP₊, k]
-            tmp2 = √((res.spm²[SP₋, k]*res.vars[SP₋, k])^2 +
+            tmp₁ = res.spm²[SP₋, k] + res.spm²[SP₊, k]
+            tmp₂ = √((res.spm²[SP₋, k]*res.vars[SP₋, k])^2 +
                      (res.spm²[SP₊, k]*res.vars[SP₊, k])^2)
             writeln(
                 dat_file,
                 # FIXME: Should honor decimals precision here, but see above
                 @sprintf("  %3d%15.7e%15.7e%15.7e",
                          k,
-                         tmp1/4,
-                         tmp2/4,
-                         tmp2/abs(tmp1))
+                         tmp₁/4,
+                         tmp₂/4,
+                         tmp₂/abs(tmp₁))
             )
         end
     end
@@ -142,8 +143,16 @@ function dump_results(cfg::Configuration,
     # NOTE: This part is completely broken in the C++ version, I did my best to
     #       fix it in this version.
     open("pil.mc", "a") do cum_dat_file
-        # TODO: Finish translating the program
-        throw(AssertionError("Not implemented yet"))
+        @enforce (NUM_RESULTS == 5) "This is specific to our 5-results setup"
+
+        write(cum_dat_file, timestamp*"\n")
+        res₁ = res.spm²[SP₋, A] + res.spm²[SP₊, A]
+        res₂ = (res.spm²[SP₋, B₊] + res.spm²[SP₊, B₊]) * cfg.𝛽₊^2
+        res₃ = (res.spm²[SP₋, B₋] + res.spm²[SP₊, B₋]) * cfg.𝛽₋^2
+        res₄ = (res.spm²[SP₋, R_MX] + res.spm²[SP₊, R_MX]) * cfg.𝛽₊
+        avg = (res₁ + res₂ + res₃ + res₄) / 4
+        write(cum_dat_file, "$(cfg.e_tot) $(res₁/4) $(res₂/4) $(res₃/4) ")
+        write(cum_dat_file, "$(res₄/4) $(avg) $(res.σ)\n")
     end
 end
 
