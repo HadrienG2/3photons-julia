@@ -1,4 +1,5 @@
-# Depends on Config.jl, Numeric.jl and ResFin.jl being include-d beforehand
+# Depends on Config.jl, Numeric.jl, ResCont.jl and ResFin.jl being include-d
+# beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -13,7 +14,8 @@ import Dates
 
 using ..Config: Configuration
 using ..Numeric: Float
-using ..ResFin: FinalResults, print_eric, print_fawzi
+using ..ResCont: NUM_RESULTS
+using ..ResFin: FinalResults, NUM_SPINS, print_eric, print_fawzi
 using Printf: @sprintf
 
 export dump_results
@@ -40,6 +42,7 @@ function dump_results(cfg::Configuration,
 
     # So, apparently, Julia has println but not writeln because... reasons?
     # Well, that's a good occasion to enforce 3photon-style formatting anyway.
+    writeln(file) = write(file, "\n")
     writeln(file, str) = write(file, " $(str)\n")
     label(key) = @sprintf("%-31s: ", key)
     format(value) = string(value)
@@ -90,7 +93,7 @@ function dump_results(cfg::Configuration,
         writeln(dat_file, "Section Efficace          (pb)", res.σ)
         writeln(dat_file, "Ecart-Type                (pb)", res.σ*res.prec)
         # Work around opinion divergence between Rust and Julia's %g logic
-        # FIXME: Should honor sig_digits here, but see above.
+        # FIXME: Should honor sig_digits precision here, but see above.
         prec_str = @sprintf("%.13e", res.prec)
         writeln(dat_file, "Precision Relative", prec_str)
         writeln(dat_file, "---------------------------------------------")
@@ -100,6 +103,24 @@ function dump_results(cfg::Configuration,
         writeln(dat_file, "Stat. Significance  B-(pb-1/2)", res.ss₋)
         writeln(dat_file, "Incert. Stat. Sign. B-(pb-1/2)", res.ss₋*res.inc_ss₋)
 
+        # Write more results (nature and purpose unclear in C++ code...)
+        writeln(dat_file)
+        decimals = min(sig_digits-1, 7)
+        for sp=1:NUM_SPINS
+            for k=1:NUM_RESULTS
+                writeln(
+                    dat_file,
+                    # FIXME: Should honor decimals precision here, but see above
+                    @sprintf("%2d%3d%15.7e%15.7e%15.7e",
+                             sp,
+                             k,
+                             res.spm²[sp, k],
+                             abs(res.spm²[sp, k]) * res.vars[sp, k],
+                             res.vars[sp, k])
+                )
+            end
+            writeln(dat_file)
+        end
         # TODO: Finish translating the program
         throw(AssertionError("Not implemented yet"))
     end
