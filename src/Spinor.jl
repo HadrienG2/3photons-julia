@@ -14,7 +14,7 @@ using ..LinAlg: E, X, Y, Z
 using ..Numeric: Float
 using StaticArrays: SMatrix, SVector, @SMatrix, @SVector
 
-export 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, NUM_HELICITIES, SpinorProducts
+export 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, NUM_HELICITIES, PhotonHelicities, SpinorProducts
 
 
 # PhotonHelicities declaration and SpinorProducts methods are very specific to

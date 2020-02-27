@@ -8,7 +8,7 @@ module LinAlg
 
 using StaticArrays: SVector
 
-export X, XYZ, Y, Z, E
+export E, X, XYZ, Y, Z
 
 
 "X impulsion of a 4-momentum"

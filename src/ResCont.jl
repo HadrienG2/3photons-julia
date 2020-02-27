@@ -15,7 +15,8 @@ using ..Spinor: 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, MMM, NUM_HELICITIES, PhotonH
                 PPP, SpinorProducts
 using StaticArrays: SMatrix, SVector, @SMatrix, @SVector
 
-export NUM_RESULTS, ResultContibution, ResultVector
+export A, B₊, B₋, I_MX, m²_sums, NUM_RESULTS, R_MX, ResultContibution,
+       ResultVector
 
 
 "Number of results (matrix elements)"

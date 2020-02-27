@@ -14,8 +14,9 @@ using ..Random: RandomGenerator, random!
 using LinearAlgebra: ⋅
 using StaticArrays: MMatrix, MVector, SMatrix, SVector, @SMatrix, @SVector
 
-export EventGenerator, electron_momentum, generate_event!, outgoing_momenta,
-       min_photon_energy
+export Event, EventGenerator, electron_momentum, generate_event!, INCOMING_E₋,
+       INCOMING_E₊, outgoing_momenta, min_photon_energy, NUM_INCOMING,
+       NUM_OUTGOING, NUM_PARTICLES, NUM_SPINS
 
 
 "Number of incoming particles"
