@@ -31,11 +31,23 @@ function dump_results(cfg::Configuration,
     current_time = Dates.now()
     timestamp = Dates.format(current_time, "dd-uuu-yy   HH:MM:SS")
 
+    # Number of significant digits in file output
+    #
+    # Must print one less than the actual machine type precision to match the
+    # output of the C++ version of 3photons.
+    #
+    sig_digits = floor(Int, -log10(eps(Float))) - 1
+
     # So, apparently, Julia has println but not writeln because... reasons?
     # Well, that's a good occasion to enforce 3photon-style formatting anyway.
     writeln(file, str) = write(file, " $(str)\n")
     label(key) = @sprintf("%-31s: ", key)
-    writeln(file, key, value) = writeln(file, label(key)*string(value))
+    format(value) = string(value)
+    # FIXME: Should honor sig_digits here, but @sprintf only supports static
+    #        format string and doesn't support .* for externally controlled
+    #        precision. Tried Formatting, but it doesn't even support %g...
+    format(value::AbstractFloat) = @sprintf("%.14g", value)
+    writeln(file, key, value) = writeln(file, label(key)*format(value))
 
     # Write execution timings to a file
     open("res.times", "w") do tim_file
@@ -74,11 +86,14 @@ function dump_results(cfg::Configuration,
         writeln(dat_file, "Taux de branchement Z--->e+e-", cfg.br_e₊_e₋)
         writeln(dat_file, "Beta plus", cfg.𝛽₊)
         writeln(dat_file, "Beta moins", cfg.𝛽₋)
-        writeln(dat_file, " ---------------------------------------------")
+        writeln(dat_file, "---------------------------------------------")
         writeln(dat_file, "Section Efficace          (pb)", res.σ)
         writeln(dat_file, "Ecart-Type                (pb)", res.σ*res.prec)
-        writeln(dat_file, "Precision Relative", res.prec)
-        writeln(dat_file, " ---------------------------------------------")
+        # Work around opinion divergence between Rust and Julia's %g logic
+        # FIXME: Should honor sig_digits here, but see above.
+        prec_str = @sprintf("%.13e", res.prec)
+        writeln(dat_file, "Precision Relative", prec_str)
+        writeln(dat_file, "---------------------------------------------")
         writeln(dat_file, "Beta minimum", res.𝛽_min)
         writeln(dat_file, "Stat. Significance  B+(pb-1/2)", res.ss₊)
         writeln(dat_file, "Incert. Stat. Sign. B+(pb-1/2)", res.ss₊*res.inc_ss₊)
