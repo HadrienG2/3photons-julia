@@ -88,9 +88,6 @@ using ..Scheduling: run_simulation
 export main
 
 
-# TODO: After translating, turns this into more idiomatic Julia (e.g. more
-#       fancy unicode variable names and broadcasting, more genericity...)
-
 "Artificial function introduced as a performance optimization"
 function main(;jit_warmup::Bool=false)
     # === CONFIGURATION READOUT ===
