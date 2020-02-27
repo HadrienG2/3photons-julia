@@ -66,7 +66,7 @@ function dump_results(cfg::Configuration,
     # Write main results file. Try to mimick the original C++ format as well as
     # possible to ease comparisons, even where it makes little sense.
     open("res.data", "w") do dat_file
-        # Some shorthands
+        # Shorthand
         ev_cut = cfg.event_cut
 
         # Write the results to the file
