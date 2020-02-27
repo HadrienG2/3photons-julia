@@ -14,6 +14,7 @@ import Dates
 using ..Config: Configuration
 using ..Numeric: Float
 using ..ResFin: FinalResults, print_eric, print_fawzi
+using Printf: @sprintf
 
 export dump_results
 
@@ -31,20 +32,23 @@ function dump_results(cfg::Configuration,
     timestamp = Dates.format(current_time, "dd-uuu-yy   HH:MM:SS")
 
     # So, apparently, Julia has println but not writeln because... reasons?
-    writeln(f, s) = write(f, s*'\n')
+    # Well, that's a good occasion to enforce 3photon-style formatting anyway.
+    writeln(file, str) = write(file, " $(str)\n")
+    label(key) = @sprintf("%-31s: ", key)
+    writeln(file, key, value) = writeln(file, label(key)*string(value))
 
     # Write execution timings to a file
     open("res.times", "w") do tim_file
         # Write a timestamp of when the run ended
-        writeln(tim_file, " $(timestamp)")
+        writeln(tim_file, timestamp)
 
         # Write program performance stats
-        writeln(tim_file, " ---------------------------------------------")
-        writeln(tim_file, " Temps ecoule                   : ???")
-        writeln(tim_file, " Temps ecoule utilisateur       : $(elapsed_secs)")
-        writeln(tim_file, " Temps ecoule systeme           : ???")
+        writeln(tim_file, "---------------------------------------------")
+        writeln(tim_file, "Temps ecoule", "???")
+        writeln(tim_file, "Temps ecoule utilisateur", elapsed_secs)
+        writeln(tim_file, "Temps ecoule systeme", "???")
         secs_per_ev = elapsed_secs / cfg.num_events
-        writeln(tim_file, " Temps ecoule par evenement     : $(secs_per_ev)")
+        writeln(tim_file, "Temps ecoule par evenement", secs_per_ev)
     end
 
     # Write main results file. Try to mimick the original C++ format as well as
