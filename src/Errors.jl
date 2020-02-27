@@ -6,7 +6,7 @@
 "Error handling primitives to ease program invariant checking"
 module Errors
 
-export check
+export @enforce
 
 
 """
