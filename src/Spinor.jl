@@ -1,4 +1,4 @@
-# Depends on Errors.jl, EvGen.jl, LinAlg.jl and Numeric.jl being include-d
+# Depends on Errors.jl, EvData.jl, LinAlg.jl and Numeric.jl being include-d
 # beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
@@ -8,8 +8,8 @@
 module Spinor
 
 using ..Errors: @enforce
-using ..EvGen: Event, INCOMING_E₋, INCOMING_E₊, NUM_INCOMING, NUM_OUTGOING,
-               NUM_PARTICLES, NUM_SPINS
+using ..EvData: Event, INCOMING_E₋, INCOMING_E₊, NUM_INCOMING, NUM_OUTGOING,
+                NUM_PARTICLES, NUM_SPINS
 using ..LinAlg: E, X, Y, Z
 using ..Numeric: Float
 using StaticArrays: SMatrix, SVector, @SMatrix, @SVector

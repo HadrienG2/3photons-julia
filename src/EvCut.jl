@@ -1,4 +1,4 @@
-# Depends on Errors.jl, EvGen.jl, LinAlg.jl and Numeric.jl being include-d
+# Depends on Errors.jl, EvData.jl, LinAlg.jl and Numeric.jl being include-d
 # beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
@@ -8,8 +8,8 @@
 module EvCut
 
 using ..Errors: @enforce
-using ..EvGen: electron_momentum, Event, NUM_OUTGOING, outgoing_momenta,
-               min_photon_energy
+using ..EvData: electron_momentum, Event, NUM_OUTGOING, outgoing_momenta,
+                min_photon_energy
 using ..LinAlg: XYZ, E
 using ..Numeric: Float
 using LinearAlgebra: ×, ⋅, norm

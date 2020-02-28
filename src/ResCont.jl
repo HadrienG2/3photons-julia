@@ -1,4 +1,4 @@
-# Depends on Coupling.jl, Errors.jl, EvGen.jl and Numeric.jl being include-d
+# Depends on Coupling.jl, Errors.jl, EvData.jl and Numeric.jl being include-d
 # beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
@@ -9,7 +9,7 @@ module ResCont
 
 using ..Coupling: Couplings
 using ..Errors: @enforce
-using ..EvGen: Event, NUM_OUTGOING
+using ..EvData: Event, NUM_OUTGOING
 using ..Numeric: Float
 using ..Spinor: 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, MMM, NUM_HELICITIES, PhotonHelicities,
                 PPP, SpinorProducts

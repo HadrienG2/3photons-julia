@@ -1,4 +1,4 @@
-# Depends on Config.jl, Errors.jl, EvGen.jl, Numeric.jl and ResCont.jl being
+# Depends on Config.jl, Errors.jl, EvData.jl, Numeric.jl and ResCont.jl being
 # include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
@@ -12,7 +12,7 @@ module ResFin
 
 using ..Config: Configuration
 using ..Errors: @enforce
-using ..EvGen: NUM_OUTGOING, NUM_SPINS
+using ..EvData: NUM_OUTGOING, NUM_SPINS
 using ..Numeric: Float
 using ..ResCont: A, B₊, B₋, I_MX, m²_sums, NUM_RESULTS, ResultContribution,
                  ResultVector, R_MX

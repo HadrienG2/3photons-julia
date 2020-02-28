@@ -1,5 +1,5 @@
-# Depends on Errors.jl, LinAlg.jl, Numeric.jl and Random.jl being include-d
-# beforehand
+# Depends on Errors.jl, EvData.jl, LinAlg.jl, Numeric.jl and Random.jl being
+# include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -8,28 +8,15 @@
 module EvGen
 
 using ..Errors: @enforce
+using ..EvData: Event, INCOMING, OUTGOING, NUM_INCOMING, NUM_OUTGOING,
+                NUM_PARTICLES
 using ..LinAlg: X, Y, Z, XYZ, E
 using ..Numeric: Float
 using ..Random: RandomGenerator, random!
 using LinearAlgebra: ⋅
 using StaticArrays: MMatrix, MVector, SMatrix, SVector, @SMatrix, @SVector
 
-export Event, EventGenerator, electron_momentum, generate_event!, INCOMING_E₋,
-       INCOMING_E₊, outgoing_momenta, min_photon_energy, NUM_INCOMING,
-       NUM_OUTGOING, NUM_PARTICLES, NUM_SPINS
-
-
-"Number of incoming particles"
-const NUM_INCOMING = 2
-
-"Number of outgoing particles (replaces original INP)"
-const NUM_OUTGOING = 3
-
-"Number of particles in an event"
-const NUM_PARTICLES = NUM_INCOMING + NUM_OUTGOING
-
-"Number of possible spin values of the outgoing particles"
-const NUM_SPINS = 2
+export EventGenerator, generate_event!
 
 
 "Generator of ee -> ppp events"
@@ -93,47 +80,6 @@ function EventGenerator(e_tot::Float; jit_warmup::Bool=false)
         event_weight,
         incoming_momenta,
     )
-end
-
-
-# === GENERATED EVENTS ===
-
-"Row of the incoming electron in the event data matrix"
-const INCOMING_E₋ = 1
-
-"Row of the incoming positron in the event data matrix"
-const INCOMING_E₊ = 2
-
-
-# FIXME: Need to specify SMatrix length to avoid type instability?
-"""
-Storage for ee -> ppp event data
-
-Encapsulates a vector of incoming and outgoing 4-momenta.
-"""
-const Event = SMatrix{NUM_PARTICLES, 4, Float, NUM_PARTICLES*4}
-
-
-"Extract the electron 4-momentum"
-function electron_momentum(event::Event)::SVector{4, Float}
-    event[INCOMING_E₋, :]
-end
-
-
-"Access the outgoing 4-momenta"
-function outgoing_momenta(event::Event)::SMatrix{NUM_OUTGOING, 4, Float}
-    OUTGOING = SVector{NUM_OUTGOING}(NUM_INCOMING+1:NUM_PARTICLES)
-    event[OUTGOING, :]
-end
-
-
-"Minimal outgoing photon energy"
-function min_photon_energy(event::Event)::Float
-    # Use the fact that photons are sorted by decreasing energy
-    #
-    # FIXME: Revise this code once option to disable sorting returns.
-    #
-    outgoing_momenta(event)[NUM_OUTGOING, E]
 end
 
 
@@ -246,8 +192,6 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
     #        idiomatic `vcat(evgen.incoming_momenta, hcat(p_xyz, p_e))`...
     #
     res = zeros(MMatrix{NUM_PARTICLES, 4})
-    INCOMING = SVector{NUM_INCOMING}(1:NUM_INCOMING)
-    OUTGOING = SVector{NUM_OUTGOING}(NUM_INCOMING+1:NUM_INCOMING+NUM_OUTGOING)
     res[INCOMING, :] = evgen.incoming_momenta
     res[OUTGOING, XYZ] = p_xyz
     res[OUTGOING, E] = p_e

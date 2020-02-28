@@ -54,18 +54,19 @@
 include("Errors.jl")      # No dependency
 include("LinAlg.jl")      # No dependency
 include("Numeric.jl")     # No dependency
+include("EvData.jl")      # Depends on: LinAlg.jl, Numeric.jl
 include("Random.jl")      # Depends on: Errors.jl, Numeric.jl
-include("EvGen.jl")       # Depends on: Errors.jl, LinAlg.jl, Numeric.jl,
-                          #             Random.jl
-include("EvCut.jl")       # Depends on: Errors.jl, EvGen.jl, LinAlg.jl,
+include("EvCut.jl")       # Depends on: Errors.jl, EvData.jl, LinAlg.jl,
                           #             Numeric.jl
-include("Spinor.jl")      # Depends on: Errors.jl, EvGen.jl, LinAlg.jl,
+include("EvGen.jl")       # Depends on: Errors.jl, EvData.jl, LinAlg.jl,
+                          #             Numeric.jl, Random.jl
+include("Spinor.jl")      # Depends on: Errors.jl, EvData.jl, LinAlg.jl,
                           #             Numeric.jl
 include("Config.jl")      # Depends on: Errors.jl, EvCut.jl, Numeric.jl
 include("Coupling.jl")    # Depends on: Config.jl, Numeric.jl
-include("ResCont.jl")     # Depends on: Coupling.jl, Errors.jl, EvGen.jl,
+include("ResCont.jl")     # Depends on: Coupling.jl, Errors.jl, EvData.jl,
                           #             Numeric.jl
-include("ResFin.jl")      # Depends on: Config.jl, Errors.jl, EvGen.jl,
+include("ResFin.jl")      # Depends on: Config.jl, Errors.jl, EvData.jl,
                           #             Numeric.jl, ResCont.jl
 include("Output.jl")      # Depends on: Config.jl, Numeric.jl, ResCont.jl,
                           #             ResFin.jl
