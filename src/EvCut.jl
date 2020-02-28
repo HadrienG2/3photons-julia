@@ -40,12 +40,12 @@ function keep_event(cut::EventCut, event::Event)::Bool
     end
 
     # Get the incoming electron 4-momentum and outgoing photon 4-momenta
-    p_el = event[INCOMING_E₋, :]
+    p_e₋ = event[INCOMING_E₋, :]
     ps_out = event[OUTGOING, :]
 
     # Check if the (beam, photon) angles pass the cut
-    cos_nums = ps_out[:, XYZ] * p_el[XYZ]
-    cos_denoms = ps_out[:, E] * p_el[E]
+    cos_nums = ps_out[:, XYZ] * p_e₋[XYZ]
+    cos_denoms = ps_out[:, E] * p_e₋[E]
     for (num, denom) ∈ zip(cos_nums, cos_denoms)
         if abs(num) > cut.a_cut * denom
             return false
@@ -69,8 +69,8 @@ function keep_event(cut::EventCut, event::Event)::Bool
     n_ppp = ps_out[1, XYZ] × ps_out[2, XYZ]
 
     # Compute the cosine of the angle between the beam and this vector
-    cos_num = p_el[XYZ] ⋅ n_ppp
-    cos_denom = p_el[E] * norm(n_ppp)
+    cos_num = p_e₋[XYZ] ⋅ n_ppp
+    cos_denom = p_e₋[E] * norm(n_ppp)
 
     # Check if the (beam, normal to photon plane) angle passes the cut
     if abs(cos_num) < cut.sin_cut * cos_denom
