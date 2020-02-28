@@ -78,6 +78,9 @@ end
 
 "Prepare for results integration"
 function ResultsBuilder(cfg::Configuration, event_weight::Float)
+    # This code depends on some aspects of the problem definition
+    @enforce (NUM_RESULTS == 5) "This code currently assumes 5 matrix elements"
+
     # Common factor (see definition and remarks above)
     fact_com = 1 / 6 * cfg.convers
     gzr = cfg.g_Z⁰ / cfg.m_Z⁰
