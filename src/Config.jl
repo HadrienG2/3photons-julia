@@ -65,6 +65,29 @@ struct Configuration
 end
 
 
+"Display the configuration, following formatting of the original 3photons code"
+function Base.show(io::IO, c::Configuration)
+    println(io, "ITOT           : ", c.num_events)
+    println(io, "ETOT           : ", c.e_tot)
+    println(io, "oCutpar.ACUT   : ", c.event_cut.a_cut)
+    println(io, "oCutpar.BCUT   : ", c.event_cut.b_cut)
+    println(io, "oCutpar.EMIN   : ", c.event_cut.e_min)
+    @printf(io, "oCutpar.SINCUT : %.0f\n", c.event_cut.sin_cut)
+    println(io, "ALPHA          : ", c.𝛼)
+    println(io, "ALPHAZ         : ", c.𝛼_Z)
+    @printf(io, "CONVERS        : %.0f\n", c.convers)
+    println(io, "oParam.MZ0     : ", c.m_Z⁰)
+    println(io, "oParam.GZ0     : ", c.g_Z⁰)
+    println(io, "SIN2W          : ", c.sin²_w)
+    println(io, "BREPEM         : ", c.br_e₊_e₋)
+    @printf(io, "BETAPLUS       : %.0f\n", c.𝛽₊)
+    @printf(io, "BETAMOINS      : %.0f\n", c.𝛽₋)
+    println(io, "NBIN           : ", c.n_bin)
+    println(io, "oParam.IMPR    : ", c.impr)
+    println(io, "PLOT           : ", c.plot)
+end
+
+
 "Constructor that loads the simulation configuration from a file"
 function Configuration(file_name::AbstractString; jit_warmup::Bool=false)
     # Open the config file
@@ -160,29 +183,6 @@ function Configuration(file_name::AbstractString; jit_warmup::Bool=false)
         # We're done checking the conifguration and can return it
         config
     end
-end
-
-
-"Display the configuration, following formatting of the original 3photons code"
-function print(c::Configuration)
-    println("ITOT           : ", c.num_events)
-    println("ETOT           : ", c.e_tot)
-    println("oCutpar.ACUT   : ", c.event_cut.a_cut)
-    println("oCutpar.BCUT   : ", c.event_cut.b_cut)
-    println("oCutpar.EMIN   : ", c.event_cut.e_min)
-    @printf("oCutpar.SINCUT : %.0f\n", c.event_cut.sin_cut)
-    println("ALPHA          : ", c.𝛼)
-    println("ALPHAZ         : ", c.𝛼_Z)
-    @printf("CONVERS        : %.0f\n", c.convers)
-    println("oParam.MZ0     : ", c.m_Z⁰)
-    println("oParam.GZ0     : ", c.g_Z⁰)
-    println("SIN2W          : ", c.sin²_w)
-    println("BREPEM         : ", c.br_e₊_e₋)
-    @printf("BETAPLUS       : %.0f\n", c.𝛽₊)
-    @printf("BETAMOINS      : %.0f\n", c.𝛽₋)
-    println("NBIN           : ", c.n_bin)
-    println("oParam.IMPR    : ", c.impr)
-    println("PLOT           : ", c.plot)
 end
 
 end

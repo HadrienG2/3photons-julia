@@ -43,8 +43,7 @@ function dump_results(cfg::Configuration,
     #
     sig_digits = floor(Int, -log10(eps(Float))) - 1
 
-    # So, apparently, Julia has println but not writeln because... reasons?
-    # Well, that's a good occasion to enforce 3photon-style formatting anyway.
+    # Facilities for replicating 3photons' output styling
     writeln(file) = write(file, "\n")
     writeln(file, str) = write(file, " $(str)\n")
     label(key) = @sprintf("%-31s: ", key)
@@ -146,14 +145,14 @@ function dump_results(cfg::Configuration,
     open("pil.mc", "a") do cum_dat_file
         @enforce (NUM_MAT_ELEMS == 5) "This code assumes 5 matrix elements"
 
-        write(cum_dat_file, timestamp*"\n")
+        println(cum_dat_file, timestamp)
         res₁ = sum(res.spm²[:, A])
         res₂ = sum(res.spm²[:, B₊]) * cfg.𝛽₊^2
         res₃ = sum(res.spm²[:, B₋]) * cfg.𝛽₋^2
         res₄ = sum(res.spm²[:, R_MX]) * cfg.𝛽₊
         avg = (res₁ + res₂ + res₃ + res₄) / 4
-        write(cum_dat_file, "$(cfg.e_tot) $(res₁/4) $(res₂/4) $(res₃/4) "*
-                            "$(res₄/4) $(avg) $(res.σ)\n")
+        println(cum_dat_file, "$(cfg.e_tot) $(res₁/4) $(res₂/4) $(res₃/4) "*
+                              "$(res₄/4) $(avg) $(res.σ)")
     end
 end
 
