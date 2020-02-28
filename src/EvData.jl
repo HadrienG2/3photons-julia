@@ -10,9 +10,8 @@ using ..LinAlg: E
 using ..Numeric: Float
 using StaticArrays: SMatrix, SVector
 
-export electron_momentum, Event, INCOMING, INCOMING_E₋, INCOMING_E₊,
-       min_photon_energy, NUM_INCOMING, NUM_OUTGOING, NUM_PARTICLES, NUM_SPINS,
-       outgoing_momenta, positron_momentum
+export Event, INCOMING, INCOMING_E₋, INCOMING_E₊, min_photon_energy,
+       NUM_INCOMING, NUM_OUTGOING, NUM_PARTICLES, NUM_SPINS
 
 
 # === EVENT TYPE DEFINITION ===
@@ -53,31 +52,16 @@ const INCOMING = SVector{NUM_INCOMING}(1:NUM_INCOMING)
 const OUTGOING = SVector{NUM_OUTGOING}(NUM_INCOMING+1:NUM_PARTICLES)
 
 
-"Extract the electron 4-momentum"
-function electron_momentum(event::Event)::SVector{4, Float}
-    event[INCOMING_E₋, :]
-end
-
-
-"Extract the positron 4-momentum"
-function positron_momentum(event::Event)::SVector{4, Float}
-    event[INCOMING_E₊, :]
-end
-
-
-"Access the outgoing 4-momenta"
-function outgoing_momenta(event::Event)::SMatrix{NUM_OUTGOING, 4, Float}
-    event[OUTGOING, :]
-end
-
-
 "Minimal outgoing photon energy"
 function min_photon_energy(event::Event)::Float
+    # Access photon momenta
+    outgoing_momenta = event[OUTGOING, :]
+
     # Use the fact that photons are sorted by decreasing energy
     #
     # FIXME: Revise this code once option to disable sorting returns.
     #
-    outgoing_momenta(event)[NUM_OUTGOING, E]
+    outgoing_momenta[NUM_OUTGOING, E]
 end
 
 end

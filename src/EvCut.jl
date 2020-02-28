@@ -8,8 +8,7 @@
 module EvCut
 
 using ..Errors: @enforce
-using ..EvData: electron_momentum, Event, NUM_OUTGOING, outgoing_momenta,
-                min_photon_energy
+using ..EvData: Event, INCOMING_E₋, NUM_OUTGOING, OUTGOING, min_photon_energy
 using ..LinAlg: XYZ, E
 using ..Numeric: Float
 using LinearAlgebra: ×, ⋅, norm
@@ -41,8 +40,8 @@ function keep_event(cut::EventCut, event::Event)::Bool
     end
 
     # Get the incoming electron 4-momentum and outgoing photon 4-momenta
-    p_el = electron_momentum(event)
-    ps_out = outgoing_momenta(event)
+    p_el = event[INCOMING_E₋, :]
+    ps_out = event[OUTGOING, :]
 
     # Check if the (beam, photon) angles pass the cut
     cos_nums = ps_out[:, XYZ] * p_el[XYZ]
