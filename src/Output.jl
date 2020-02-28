@@ -45,7 +45,7 @@ function dump_results(cfg::Configuration,
 
     # Facilities for replicating 3photons' output styling
     writeln(file) = write(file, "\n")
-    writeln(file, str) = write(file, " $(str)\n")
+    writeln(file, str) = write(file, " $str\n")
     label(key) = @sprintf("%-31s: ", key)
     format(value) = string(value)
     # FIXME: Should honor sig_digits here, but @sprintf only supports static
@@ -152,7 +152,7 @@ function dump_results(cfg::Configuration,
         res₄ = sum(res.spm²[:, R_MX]) * cfg.𝛽₊
         avg = (res₁ + res₂ + res₃ + res₄) / 4
         println(cum_dat_file, "$(cfg.e_tot) $(res₁/4) $(res₂/4) $(res₃/4) "*
-                              "$(res₄/4) $(avg) $(res.σ)")
+                              "$(res₄/4) $avg $(res.σ)")
     end
 end
 
