@@ -66,25 +66,25 @@ end
 
 
 "Display the configuration, following formatting of the original 3photons code"
-function Base.show(io::IO, c::Configuration)
-    println(io, "ITOT           : ", c.num_events)
-    println(io, "ETOT           : ", c.e_tot)
-    println(io, "oCutpar.ACUT   : ", c.event_cut.a_cut)
-    println(io, "oCutpar.BCUT   : ", c.event_cut.b_cut)
-    println(io, "oCutpar.EMIN   : ", c.event_cut.e_min)
-    @printf(io, "oCutpar.SINCUT : %.0f\n", c.event_cut.sin_cut)
-    println(io, "ALPHA          : ", c.𝛼)
-    println(io, "ALPHAZ         : ", c.𝛼_Z)
-    @printf(io, "CONVERS        : %.0f\n", c.convers)
-    println(io, "oParam.MZ0     : ", c.m_Z⁰)
-    println(io, "oParam.GZ0     : ", c.g_Z⁰)
-    println(io, "SIN2W          : ", c.sin²_w)
-    println(io, "BREPEM         : ", c.br_e₊_e₋)
-    @printf(io, "BETAPLUS       : %.0f\n", c.𝛽₊)
-    @printf(io, "BETAMOINS      : %.0f\n", c.𝛽₋)
-    println(io, "NBIN           : ", c.n_bin)
-    println(io, "oParam.IMPR    : ", c.impr)
-    println(io, "PLOT           : ", c.plot)
+function Base.show(io::IO, cfg::Configuration)
+    println(io, "ITOT           : ", cfg.num_events)
+    println(io, "ETOT           : ", cfg.e_tot)
+    println(io, "oCutpar.ACUT   : ", cfg.event_cut.a_cut)
+    println(io, "oCutpar.BCUT   : ", cfg.event_cut.b_cut)
+    println(io, "oCutpar.EMIN   : ", cfg.event_cut.e_min)
+    @printf(io, "oCutpar.SINCUT : %.0f\n", cfg.event_cut.sin_cut)
+    println(io, "ALPHA          : ", cfg.𝛼)
+    println(io, "ALPHAZ         : ", cfg.𝛼_Z)
+    @printf(io, "CONVERS        : %.0f\n", cfg.convers)
+    println(io, "oParam.MZ0     : ", cfg.m_Z⁰)
+    println(io, "oParam.GZ0     : ", cfg.g_Z⁰)
+    println(io, "SIN2W          : ", cfg.sin²_w)
+    println(io, "BREPEM         : ", cfg.br_e₊_e₋)
+    @printf(io, "BETAPLUS       : %.0f\n", cfg.𝛽₊)
+    @printf(io, "BETAMOINS      : %.0f\n", cfg.𝛽₋)
+    println(io, "NBIN           : ", cfg.n_bin)
+    println(io, "oParam.IMPR    : ", cfg.impr)
+    println(io, "PLOT           : ", cfg.plot)
 end
 
 
@@ -158,26 +158,26 @@ function Configuration(file_name::AbstractString; jit_warmup::Bool=false)
         end
 
         # A sensible simulation must run for at least one event
-        @enforce (config.num_events > 0) "Invalid event count"
+        @enforce (config.num_events > 0) "Please simulate at least one event"
 
         # We don't support the original code's PAW-based plotting features, so
         # we make sure that they weren't enabled.
         #
         # FIXME: Consider enabling some plotting in the Julia version later.
         #
-        @enforce (!config.plot) "Plotting is not supported"
+        @enforce (!config.plot) "Plotting is not supported by this version"
 
         # We don't support the initial code's debugging feature which displays
         # all intermediary results during sampling. Such a feature should be set
         # up at build time to avoid run-time costs.
         #
-        # FIXME: Revise this design decision for the Julia version. There is no
-        #        compile time versus run-time distinction here.
+        # FIXME: Revise this design decision for the Julia version. The compile
+        #        time versus run-time distinction works differently here.
         #
         @enforce (!config.impr) """
         Individual result printing is not supported.
-        This debugging feature has a run-time performance cost even when unused.
-        It should be implemented at compile-time instead.
+        This debugging feature has a run-time performance cost even when unused,
+        so it should be implemented at compile-time instead.
         """
 
         # We're done checking the conifguration and can return it

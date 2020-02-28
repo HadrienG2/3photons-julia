@@ -99,14 +99,10 @@ function main(;jit_warmup::Bool=false)
     # Load the configuration from its file
     cfg = Configuration("valeurs"; jit_warmup=jit_warmup)
 
-
     # === SIMULATION INITIALIZATION ===
 
-    # Record when the simulation started
-    #
-    # NOTE: Unlike the C++ version, we do this after loading the configuration
-    #       file, which reduces IO-induced timing fluctuations.
-    #
+    # NOTE: Unlike the C++ version, we start the clock after configuration I/O,
+    #       to avoid IO-induced timing fluctuations.
     start_time_s = time()
 
     # NOTE: Removed final particle mass array. Since we are simulating photons,
@@ -120,7 +116,6 @@ function main(;jit_warmup::Bool=false)
 
     # Initialize the event generator
     evgen = EventGenerator(cfg.e_tot; jit_warmup=jit_warmup)
-
 
     # === SIMULATION EXECUTION ===
 
@@ -160,7 +155,6 @@ function main(;jit_warmup::Bool=false)
     result = run_simulation(num_events, simulate_events)
 
     # NOTE: This is where the FORTRAN code would normalize histograms
-
 
     # === RESULTS DISPLAY AND STORAGE ===
 

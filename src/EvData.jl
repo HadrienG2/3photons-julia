@@ -64,4 +64,17 @@ function min_photon_energy(event::Event)::Float
     outgoing_momenta[NUM_OUTGOING, E]
 end
 
+
+"Dump 4-momenta of the 3 outgoing photons"
+function Base.show(io::IO, event::Event)
+    p_out = event[OUTGOING, :]
+    for coord=1:4
+        print(io, coord-1, "\t")
+        for part=1:NUM_OUTGOING
+            print(io, p_out[part, coord], "\t")
+        end
+        println(io)
+    end
+end
+
 end

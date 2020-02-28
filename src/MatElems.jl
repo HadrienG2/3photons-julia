@@ -9,7 +9,7 @@ module MatElems
 
 using ..Coupling: Couplings
 using ..Errors: @enforce
-using ..EvData: Event
+using ..EvData: Event, NUM_OUTGOING, NUM_SPINS
 using ..Numeric: Float
 using ..Spinor: 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, HELICITIES, NUM_HELICITIES,
                 SpinorProducts
@@ -83,8 +83,23 @@ end
 
 
 "Compute the sums of the squared matrix elements for each contribution"
-function m²_sums(rc::MEsContributions)::MEsVector
-    @SVector [ sum(rc[elem, :]) for elem=1:NUM_MAT_ELEMS ]
+function m²_sums(mecs::MEsContributions)::MEsVector
+    @SVector [ sum(mecs[elem, :]) for elem=1:NUM_MAT_ELEMS ]
+end
+
+
+"Display the results in human-readable form"
+function Base.show(io::IO, mecs::MEsContributions)
+    @enforce (NUM_OUTGOING == 3) "This code assumes 3 outgoing particles"
+    @enforce (NUM_SPINS == 2) "This code assumes particles of spin +/-1"
+    for elem=1:NUM_MAT_ELEMS
+        println(io, "Matrix element #", elem-1)
+        println(io, "---  \t--+  \t-+-  \t-++  \t+--  \t+-+  \t++-  \t+++")
+        for cont ∈ mecs[elem, :]
+            print(io, cont, "  \t")
+        end
+        println(io)
+    end
 end
 
 end
