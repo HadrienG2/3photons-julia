@@ -174,7 +174,7 @@ using Profile
 
 # FIXME: The need for such ceremony to get optimal performance from the main
 #        function and non-noisy profiles is arguably a Julia issue...
-MainModule.main(jit_warmup=true)  # Get JIT out of our profile
+MainModule.main(jit_warmup=true)  # Keep as much JIT as possible out of profiles
 Profile.clear_malloc_data()
 @profile @time MainModule.main()
 Profile.print(mincount=130, noisefloor=1.0)  # Ignore <2% + low wrt parent
