@@ -75,6 +75,7 @@ function random_vector!(rng::RanfGenerator, ::Val{N})::SVector{N, Float} where N
 
     # ...so it's best to generate all the numbers in one go
     rng.index -= N
+    # FIXME: It's sad that efficient StaticArray slicing requires this weirdness
     indices = SVector{N, Int}((rng.index+1):(rng.index+N))
     rng.numbers[indices] .* INV_MODULO
 end

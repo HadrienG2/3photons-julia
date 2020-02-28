@@ -39,6 +39,7 @@ end
 "Number of photon helicity configurations"
 const NUM_HELICITIES = NUM_SPINS^NUM_OUTGOING
 
+# FIXME: It's sad that efficient StaticArray slicing requires this weirdness
 "List of all helicity configurations"
 const HELICITIES = PhotonHelicities.(SVector{NUM_HELICITIES}(0b000:0b111))
 

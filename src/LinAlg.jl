@@ -23,7 +23,8 @@ const Z = 3
 "Energy of a 4-momentum"
 const E = 4
 
-"Helper for efficiently slicing the spatial part of a 4-momentum"
+# FIXME: It's sad that efficient StaticArray slicing requires this weirdness
+"Spatial part of a 4-momentum"
 const XYZ = SVector{3}(X:Z)
 
 end

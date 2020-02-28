@@ -45,9 +45,11 @@ const INCOMING_E₋ = 1
 "Row of the incoming positron in the event data matrix"
 const INCOMING_E₊ = 2
 
+# FIXME: It's sad that efficient StaticArray slicing requires this weirdness
 "Rows of the incoming particles in the event data matrix"
 const INCOMING = SVector{NUM_INCOMING}(1:NUM_INCOMING)
 
+# FIXME: It's sad that efficient StaticArray slicing requires this weirdness
 "Rows of the outgoing particles in the event data matrix"
 const OUTGOING = SVector{NUM_OUTGOING}(NUM_INCOMING+1:NUM_PARTICLES)
 
