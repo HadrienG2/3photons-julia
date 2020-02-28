@@ -16,7 +16,7 @@ disabled at various optimization levels" caveat.
 macro enforce(expr, msgs...)
     msg_body = isempty(msgs) ? expr : msgs[1]
     msg = string(msg_body)
-    return :($(esc(expr)) ? $(nothing) : throw(AssertionError($(msg))))
+    return :($(esc(expr)) ? $nothing : throw(AssertionError($msg)))
 end
 
 end
