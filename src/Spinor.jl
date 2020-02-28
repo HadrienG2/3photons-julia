@@ -11,7 +11,7 @@ using ..Errors: @enforce
 using ..EvData: Event, INCOMING_E₋, INCOMING_E₊, NUM_INCOMING, NUM_OUTGOING,
                 NUM_PARTICLES, NUM_SPINS
 using ..LinAlg: E, X, Y, Z
-using ..Numeric: Float
+using ..Numeric: ComplexF, Float
 using StaticArrays: SMatrix, SVector, @SMatrix, @SVector
 
 export 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, NUM_HELICITIES, PhotonHelicities, SpinorProducts
@@ -42,7 +42,7 @@ const NUM_HELICITIES = NUM_SPINS^NUM_OUTGOING
 
 # FIXME: Need to specify SMatrix length to avoid type instability?
 "Massless 4-momenta spinor inner products"
-const SpinorProducts = SMatrix{NUM_PARTICLES, NUM_PARTICLES, Complex{Float}, NUM_PARTICLES^2}
+const SpinorProducts = SMatrix{NUM_PARTICLES, NUM_PARTICLES, ComplexF, NUM_PARTICLES^2}
 
 
 # === CONSTRUCTION ===
@@ -72,11 +72,11 @@ end
 
 # === GRAM MATRIX ACCESSORS ===
 
-function s(sx::SpinorProducts, i::Int, j::Int)::Complex{Float}
+function s(sx::SpinorProducts, i::Int, j::Int)::ComplexF
     sx[i, j]
 end
 
-function t(sx::SpinorProducts, i::Int, j::Int)::Complex{Float}
+function t(sx::SpinorProducts, i::Int, j::Int)::ComplexF
     -conj(sx[i, j])
 end
 
@@ -89,36 +89,36 @@ const E₋ = INCOMING_E₋
 const E₊ = INCOMING_E₊
 
 "Standard amplitude for helicities ++-"
-function 𝛼₍₊₊₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛼₍₊₊₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::ComplexF
     -√8 * s(sx, E₋, E₊) * s(sx, E₋, k3)^2 /
         (s(sx, E₋, k1) * s(sx, E₋, k2) * s(sx, E₊, k1) * s(sx, E₊, k2))
 end
 
 "Standard amplitude for helicities +--"
-function 𝛼₍₊₋₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛼₍₊₋₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::ComplexF
     -√8 * t(sx, E₋, E₊) * t(sx, E₊, k1)^2 /
         (t(sx, E₊, k2) * t(sx, E₊, k3) * t(sx, E₋, k2) * t(sx, E₋, k3))
 end
 
 "Anomalous amplitude 𝛽₊ for helicities ++-"
-function 𝛽₊₍₊₊₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛽₊₍₊₊₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::ComplexF
     -√8 * t(sx, E₋, E₊) * (t(sx, k1, k2) * s(sx, k3, E₋))^2
 end
 
 "Anomalous amplitude 𝛽₊ for helicities +--"
-function 𝛽₊₍₊₋₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛽₊₍₊₋₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::ComplexF
     -√8 * s(sx, E₋, E₊) * (t(sx, k1, E₊) * s(sx, k2, k3))^2
 end
 
 "Anomalous amplitude 𝛽₋ for helicities +++"
-function 𝛽₋₍₊₊₊₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛽₋₍₊₊₊₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::ComplexF
     -√8 * s(sx, E₋, E₊) * ((t(sx, k1, k2) * t(sx, k3, E₊))^2 +
                            (t(sx, k1, k3) * t(sx, k2, E₊))^2 +
                            (t(sx, k2, k3) * t(sx, k1, E₊))^2)
 end
 
 "Anomalous amplitude 𝛽₋ for helicities ---"
-function 𝛽₋₍₋₋₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::Complex{Float}
+function 𝛽₋₍₋₋₋₎(sx::SpinorProducts, k1::Int, k2::Int, k3::Int)::ComplexF
     -√8 * t(sx, E₋, E₊) * ((s(sx, k1, E₋) * s(sx, k2, k3))^2 +
                            (s(sx, k2, E₋) * s(sx, k1, k3))^2 +
                            (s(sx, k3, E₋) * s(sx, k1, k2))^2)
@@ -128,7 +128,7 @@ end
 # External interface from helicities enum
 
 "Standard amplitude for given photon helicities"
-function 𝛼_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{Float}
+function 𝛼_amp(sx::SpinorProducts, helicities::PhotonHelicities)::ComplexF
     if helicities == MMM
         Complex(0.0)
     elseif helicities == MMP
@@ -151,7 +151,7 @@ function 𝛼_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{Flo
 end
 
 "Anomalous amplitude 𝛽₊ for given photon helicities"
-function 𝛽₊_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{Float}
+function 𝛽₊_amp(sx::SpinorProducts, helicities::PhotonHelicities)::ComplexF
     if helicities == MMM
         Complex(0.0)
     elseif helicities == MMP
@@ -174,7 +174,7 @@ function 𝛽₊_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{
 end
 
 "Anomalous amplitude 𝛽₋ for given photon helicities"
-function 𝛽₋_amp(sx::SpinorProducts, helicities::PhotonHelicities)::Complex{Float}
+function 𝛽₋_amp(sx::SpinorProducts, helicities::PhotonHelicities)::ComplexF
     if helicities == MMM
         𝛽₋₍₋₋₋₎(sx, 3, 4, 5)
     elseif helicities == MMP

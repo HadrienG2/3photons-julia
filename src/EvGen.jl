@@ -188,8 +188,8 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
 
     # Build the final event: incoming momenta + output 4-momenta
     #
-    # FIXME: Discuss with StaticArrays devs why this is 2x faster than an
-    #        idiomatic `vcat(evgen.incoming_momenta, hcat(p_xyz, p_e))`...
+    # FIXME: Discuss with StaticArrays devs why this is 2x faster than the
+    #        straightforward `vcat(evgen.incoming_momenta, hcat(p_xyz, p_e))`...
     #
     res = zeros(MMatrix{NUM_PARTICLES, 4})
     res[INCOMING, :] = evgen.incoming_momenta
