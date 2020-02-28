@@ -129,9 +129,6 @@ function main(;jit_warmup::Bool=false)
         res_builder = ResultsBuilder(cfg, evgen.event_weight)
 
         # Simulate the requested number of events
-        #
-        # DEBUG: If that seems stuck, try @time for allocations profiling...
-        #
         for _ = 1:num_events
             # Generate an event
             event = generate_event!(rng, evgen)
