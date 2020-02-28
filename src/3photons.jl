@@ -64,14 +64,14 @@ include("Spinor.jl")      # Depends on: Errors.jl, EvData.jl, LinAlg.jl,
                           #             Numeric.jl
 include("Config.jl")      # Depends on: Errors.jl, EvCut.jl, Numeric.jl
 include("Coupling.jl")    # Depends on: Config.jl, Numeric.jl
-include("ResCont.jl")     # Depends on: Coupling.jl, Errors.jl, EvData.jl,
+include("MatElems.jl")    # Depends on: Coupling.jl, Errors.jl, EvData.jl,
                           #             Numeric.jl
 include("ResAcc.jl")      # Depends on: Config.jl, Errors.jl, EvData.jl,
-                          #             Numeric.jl, ResCont.jl
+                          #             Numeric.jl, MatElems.jl
 include("ResFin.jl")      # Depends on: Config.jl, Errors.jl, EvData.jl,
-                          #             Numeric.jl, ResAcc.jl, ResCont.jl
+                          #             Numeric.jl, ResAcc.jl, MatElems.jl
 include("Output.jl")      # Depends on: Config.jl, EvData.jl, Numeric.jl,
-                          #             ResCont.jl, ResFin.jl
+                          #             MatElems.jl, ResFin.jl
 include("Scheduling.jl")  # Depends on: Errors.jl, Random.jl, ResAcc.jl,
                           #             ResFin.jl
 
@@ -83,10 +83,10 @@ using ..Config: Configuration
 using ..Coupling: Couplings
 using ..EvCut: keep_event
 using ..EvGen: EventGenerator, generate_event!
+using ..MatElems: MEsContributions
 using ..Output: dump_results
 using ..Random: RandomGenerator
-using ..ResCont: ResultContribution
-using ..ResAcc: integrate_contrib!, ResultsAccumulator
+using ..ResAcc: integrate_event!, ResultsAccumulator
 using ..Scheduling: run_simulation
 
 export main
@@ -137,12 +137,16 @@ function main(;jit_warmup::Bool=false)
             # Generate an event
             event = generate_event!(rng, evgen)
 
-            # If the event passes the cut, compute the total weight (incl.
-            # matrix elements) and integrate it into the final results.
+            # If the event passes the cut...
             if keep_event(cfg.event_cut, event)
-                res_contrib = ResultContribution(couplings, event)
+                # Compute the total weight, including matrix elements
+                me_contribs = MEsContributions(couplings, event)
+
                 # NOTE: The original code would display the result here
-                integrate_contrib!(res_acc, res_contrib)
+
+                # Integrate the event's contribution into the results
+                integrate_event!(res_acc, me_contribs)
+
                 # NOTE: The FORTRAN code would fill histograms here
             end
         end

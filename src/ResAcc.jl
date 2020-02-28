@@ -1,4 +1,4 @@
-# Depends on Config.jl, Errors.jl, EvData.jl, Numeric.jl and ResCont.jl being
+# Depends on Config.jl, Errors.jl, EvData.jl, MatElems.jl and Numeric.jl being
 # include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
@@ -10,11 +10,11 @@ module ResAcc
 using ..Config: Configuration
 using ..Errors: @enforce
 using ..EvData: NUM_OUTGOING
+using ..MatElems: m²_sums, MEsContributions, MEsVector, NUM_MAT_ELEMS
 using ..Numeric: Float
-using ..ResCont: m²_sums, NUM_RESULTS, ResultContribution, ResultVector
 using LinearAlgebra: ⋅
 
-export integrate_contrib!, merge_results!, ResultsAccumulator
+export integrate_event!, merge_results!, ResultsAccumulator
 
 
 """
@@ -28,13 +28,13 @@ mutable struct ResultsAccumulator
     selected_events::UInt
 
     "Accumulated cross-section for each contribution"
-    spm²::ResultVector
+    spm²::MEsVector
 
     "Accumulated variance for each contribution"
-    vars::ResultVector
+    vars::MEsVector
 
     "Impact of each contribution on the cross-section"
-    σ_contribs::ResultVector
+    σ_contribs::MEsVector
 
     "Accumulated total cross-section"
     σ::Float
@@ -70,7 +70,7 @@ end
 "Prepare for results integration"
 function ResultsAccumulator(cfg::Configuration, event_weight::Float)
     # This code depends on some aspects of the problem definition
-    @enforce (NUM_RESULTS == 5) "This code currently assumes 5 matrix elements"
+    @enforce (NUM_MAT_ELEMS == 5) "This code assumes 5 matrix elements"
 
     # Common factor (see definition and remarks above)
     fact_com = 1 / 6 * cfg.convers
@@ -102,7 +102,7 @@ function ResultsAccumulator(cfg::Configuration, event_weight::Float)
     aa_contrib = com_contrib * c_aa
     bb_contrib = com_contrib * c_bb * propag / gzr^2
     ab_contrib = com_contrib * c_ab * 2 * cfg.𝛽₊ * propag / gzr
-    σ_contribs = ResultVector(
+    σ_contribs = MEsVector(
         aa_contrib,              # A
         bb_contrib * cfg.𝛽₊^2,   # B₊
         bb_contrib * cfg.𝛽₋^2,   # B₋
@@ -115,12 +115,12 @@ function ResultsAccumulator(cfg::Configuration, event_weight::Float)
     # FIXME: Isn't there any way to say which field we are talking about?
     #
     ResultsAccumulator(
-        0,                   # selected_events
-        zeros(NUM_RESULTS),  # spm²
-        zeros(NUM_RESULTS),  # vars
+        0,                 # selected_events
+        zeros(MEsVector),  # spm²
+        zeros(MEsVector),  # vars
         σ_contribs,
-        0,                   # σ
-        0,                   # variance
+        0,                 # σ
+        0,                 # variance
 
         cfg,
         fact_com,
@@ -131,8 +131,8 @@ function ResultsAccumulator(cfg::Configuration, event_weight::Float)
 end
 
 
-"Integrate one intermediary result into the simulation results"
-function integrate_contrib!(acc::ResultsAccumulator, result::ResultContribution)
+"Integrate an event's contribution into the simulation results"
+function integrate_event!(acc::ResultsAccumulator, result::MEsContributions)
     acc.selected_events += 1
     spm²_dif = m²_sums(result)
     acc.spm² += spm²_dif

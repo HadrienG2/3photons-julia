@@ -1,4 +1,4 @@
-# Depends on Config.jl, Errors.jl, EvData.jl, Numeric.jl, ResCont.jl and
+# Depends on Config.jl, Errors.jl, EvData.jl, MatElems.jl, Numeric.jl and
 # ResFin.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
@@ -15,8 +15,8 @@ import Dates
 using ..Config: Configuration
 using ..Errors: @enforce
 using ..EvData: NUM_SPINS
+using ..MatElems: A, B₊, B₋, NUM_MAT_ELEMS, R_MX
 using ..Numeric: Float
-using ..ResCont: A, B₊, B₋, NUM_RESULTS, R_MX
 using ..ResFin: FinalResults, print_eric, print_fawzi
 using LinearAlgebra: norm
 using Printf: @sprintf
@@ -110,28 +110,28 @@ function dump_results(cfg::Configuration,
         writeln(dat_file)
         decimals = min(sig_digits-1, 7)
         for sp=1:NUM_SPINS
-            for k=1:NUM_RESULTS
+            for elem=1:NUM_MAT_ELEMS
                 writeln(
                     dat_file,
                     # FIXME: Should honor decimals precision here, but see above
                     @sprintf("%2d%3d%15.7e%15.7e%15.7e",
                              sp,
-                             k,
-                             res.spm²[sp, k],
-                             abs(res.spm²[sp, k]) * res.vars[sp, k],
-                             res.vars[sp, k])
+                             elem,
+                             res.spm²[sp, elem],
+                             abs(res.spm²[sp, elem]) * res.vars[sp, elem],
+                             res.vars[sp, elem])
                 )
             end
             writeln(dat_file)
         end
-        for k=1:NUM_RESULTS
-            tmp₁ = sum(res.spm²[:, k])
-            tmp₂ = norm(res.spm²[:, k] .* res.vars[:, k])
+        for elem=1:NUM_MAT_ELEMS
+            tmp₁ = sum(res.spm²[:, elem])
+            tmp₂ = norm(res.spm²[:, elem] .* res.vars[:, elem])
             writeln(
                 dat_file,
                 # FIXME: Should honor decimals precision here, but see above
                 @sprintf("  %3d%15.7e%15.7e%15.7e",
-                         k,
+                         elem,
                          tmp₁/4,
                          tmp₂/4,
                          tmp₂/abs(tmp₁))
@@ -144,7 +144,7 @@ function dump_results(cfg::Configuration,
     # NOTE: This part is completely broken in the C++ version, I did my best to
     #       fix it in this version.
     open("pil.mc", "a") do cum_dat_file
-        @enforce (NUM_RESULTS == 5) "This is specific to our 5-results setup"
+        @enforce (NUM_MAT_ELEMS == 5) "This code assumes 5 matrix elements"
 
         write(cum_dat_file, timestamp*"\n")
         res₁ = sum(res.spm²[:, A])

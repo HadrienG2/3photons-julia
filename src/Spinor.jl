@@ -39,6 +39,9 @@ end
 "Number of photon helicity configurations"
 const NUM_HELICITIES = NUM_SPINS^NUM_OUTGOING
 
+"List of all helicity configurations"
+const HELICITIES = PhotonHelicities.(SVector{NUM_HELICITIES}(0b000:0b111))
+
 
 # FIXME: Need to specify SMatrix length to avoid type instability?
 "Massless 4-momenta spinor inner products"

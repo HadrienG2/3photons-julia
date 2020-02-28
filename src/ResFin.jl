@@ -1,5 +1,5 @@
-# Depends on Config.jl, Errors.jl, EvData.jl, Numeric.jl, ResAcc.jl and
-# ResCont.jl being include-d beforehand
+# Depends on Config.jl, Errors.jl, EvData.jl, MatElems.jl, Numeric.jl and
+# ResAcc.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -13,9 +13,9 @@ module ResFin
 using ..Config: Configuration
 using ..Errors: @enforce
 using ..EvData: NUM_SPINS
+using ..MatElems: A, B₊, B₋, I_MX, NUM_MAT_ELEMS, R_MX
 using ..Numeric: Float
 using ..ResAcc: ResultsAccumulator
-using ..ResCont: A, B₊, B₋, I_MX, NUM_RESULTS, R_MX
 using LinearAlgebra: norm
 using Printf: @printf
 using StaticArrays: MMatrix, SMatrix, SVector, @MMatrix, @SMatrix, @SVector
@@ -23,13 +23,13 @@ using StaticArrays: MMatrix, SMatrix, SVector, @MMatrix, @SMatrix, @SVector
 export FinalResults, print_eric, print_fawzi, SP₋, SP₊
 
 
-# FIXME: Need to specify SMatrix length to avoid type instability?
+# FIXME: Need to specify SMatrix length to avoid type instability in structs
 """
-Matrix of per-spin result contributions
+Matrix of per-spin matrix elements
 
-Rows are spins, columns are result contributions (in the ResCont.jl sense)
+Rows are spins, columns are matrix elements (in the MatElems.jl sense)
 """
-const PerSpinResults = SMatrix{NUM_SPINS, NUM_RESULTS, Float, NUM_SPINS*NUM_RESULTS};
+const PerSpinMEs = SMatrix{NUM_SPINS, NUM_MAT_ELEMS, Float, NUM_SPINS*NUM_MAT_ELEMS};
 
 "Index of negative spin data"
 const SP₋ = 1
@@ -44,10 +44,10 @@ struct FinalResults
     selected_events::UInt
 
     "Cross-section for each spin"
-    spm²::PerSpinResults
+    spm²::PerSpinMEs
 
     "Variance for each spin"
-    vars::PerSpinResults
+    vars::PerSpinMEs
 
     "Total cross-section"
     σ::Float
@@ -82,8 +82,8 @@ end
 "Turn integrated simulation data into finalized results"
 function FinalResults(acc::ResultsAccumulator)::FinalResults
     # This code depends on some aspects of the problem definition
-    @enforce (NUM_SPINS == 2) "This code currently assumes 2 spins"
-    @enforce (NUM_RESULTS == 5) "This code currently assumes 5 matrix elements"
+    @enforce (NUM_SPINS == 2) "This code assumes 2 spins"
+    @enforce (NUM_MAT_ELEMS == 5) "This code assumes 5 matrix elements"
 
     # Simulation configuration shorthands
     cfg = acc.cfg
@@ -99,17 +99,17 @@ function FinalResults(acc::ResultsAccumulator)::FinalResults
             v_var = (acc.vars[i] - v_spm²^2 / n_ev) / (n_ev - 1)
             √(v_var / n_ev) / abs(v_spm² / n_ev)
         end
-        for i=1:NUM_RESULTS
+        for i=1:NUM_MAT_ELEMS
     ]
 
     # Copy for the opposite spin
     spm² = @MMatrix [
         acc.spm²[res]
-        for _spin=1:NUM_SPINS, res=1:NUM_RESULTS
+        for _spin=1:NUM_SPINS, res=1:NUM_MAT_ELEMS
     ]
     vars = @SMatrix [
         vars_1spin[res]
-        for _spin=1:NUM_SPINS, res=1:NUM_RESULTS
+        for _spin=1:NUM_SPINS, res=1:NUM_MAT_ELEMS
     ]
 
     # Electroweak polarisations factors for the 𝛽₊/𝛽₋ anomalous contribution
@@ -176,7 +176,7 @@ end
 "Display results using Eric's (???) parametrization"
 function print_eric(results::FinalResults)
     @enforce (NUM_SPINS == 2) "This code assumes particles of spin +/-1"
-    @enforce (NUM_RESULTS == 5) "This code assumes a 5-results configuration"
+    @enforce (NUM_MAT_ELEMS == 5) "This code assumes 5 matrix elements"
 
     cfg = results._cfg
     spm² = results.spm²
@@ -207,7 +207,7 @@ Display Fawzi's (???) analytical results and compare them to the Monte Carlo
 results that we have computed
 """
 function print_fawzi(results::FinalResults)
-    @enforce (NUM_RESULTS == 5) "This code assumes a 5-results configuration"
+    @enforce (NUM_MAT_ELEMS == 5) "This code assumes 5 matrix elements"
 
     cfg = results._cfg
     ev_cut = cfg.event_cut
