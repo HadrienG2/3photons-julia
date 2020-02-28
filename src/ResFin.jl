@@ -115,12 +115,13 @@ function FinalResults(acc::ResultsAccumulator)::FinalResults
     # Electroweak polarisations factors for the 𝛽₊/𝛽₋ anomalous contribution
     pol₊ = -2 * cfg.sin²_w
     pol₋ = 1 + pol₊
+    pols = @SVector[ pol₋, pol₊ ]
 
     # Take polarisations into account
-    spm²[SP₋, B₊:B₋] *= pol₋^2
-    spm²[SP₊, B₊:B₋] *= pol₊^2
-    spm²[SP₋, R_MX:I_MX] *= pol₋
-    spm²[SP₊, R_MX:I_MX] *= pol₊
+    for sp=1:NUM_SPINS
+        spm²[sp, B₊:I_MX] *= pols[sp]
+        spm²[sp, B₊:B₋] *= pols[sp]
+    end
 
     # Flux factor (=1/2s for 2 initial massless particles)
     flux = 1 / (2 * cfg.e_tot^2)
@@ -182,20 +183,21 @@ function print_eric(results::FinalResults)
     spm² = results.spm²
 
     µ_th = cfg.br_e₊_e₋ * cfg.convers / (8 * 9 * 5 * π^2 * cfg.m_Z⁰ * cfg.g_Z⁰)
-    λ₀₍₋₎ = (spm²[SP₋, B₋] - spm²[SP₋, B₊]) / 2
-    λ₀₍₊₎ = (spm²[SP₊, B₋] - spm²[SP₊, B₊]) / 2
-    µ₀₍₋₎ = (spm²[SP₋, B₋] + spm²[SP₋, B₊]) / 2
-    µ₀₍₊₎ = (spm²[SP₊, B₋] + spm²[SP₊, B₊]) / 2
-    µ_num = (spm²[SP₋, B₊] + spm²[SP₋, B₋] + spm²[SP₊, B₊] + spm²[SP₊, B₋]) / 4
+    σ₀ = spm²[:, A] / 2
+    𝛼₀ = spm²[:, I_MX] / 2
+    𝛽₀ = spm²[:, R_MX] / 2
+    λ₀ = (spm²[:, B₋] - spm²[:, B₊]) / 2
+    µ₀ = (spm²[:, B₋] + spm²[:, B₊]) / 2
+    µ_num = sum(spm²[:, B₊:B₋]) / 4
 
     println()
     println("       :        -          +")
-    @printf("sigma0  : %.6f | %.6f\n", spm²[SP₋, A]/2, spm²[SP₊, A]/2)
-    @printf("alpha0  : %.5e | %.4e\n", spm²[SP₋, I_MX]/2, spm²[SP₊, I_MX]/2)
-    @printf("beta0   : %.0f | %.0f\n", spm²[SP₋, R_MX]/2, spm²[SP₊, R_MX]/2)
-    @printf("lambda0 : %.4f | %.4f\n", λ₀₍₋₎, λ₀₍₊₎)
-    @printf("mu0     : %.4f | %.5f\n", µ₀₍₋₎, µ₀₍₊₎)
-    @printf("mu/lamb : %.5f | %.5f\n", µ₀₍₋₎/λ₀₍₋₎, µ₀₍₊₎/λ₀₍₊₎)
+    @printf("sigma0  : %.6f | %.6f\n", σ₀[SP₋], σ₀[SP₊])
+    @printf("alpha0  : %.5e | %.4e\n", 𝛼₀[SP₋], 𝛼₀[SP₊])
+    @printf("beta0   : %.0f | %.0f\n", 𝛽₀[SP₋], 𝛽₀[SP₊])
+    @printf("lambda0 : %.4f | %.4f\n", λ₀[SP₋], λ₀[SP₊])
+    @printf("mu0     : %.4f | %.5f\n", µ₀[SP₋], µ₀[SP₊])
+    @printf("mu/lamb : %.5f | %.5f\n", µ₀[SP₋]/λ₀[SP₋], µ₀[SP₊]/λ₀[SP₊])
     @printf("mu (num): %.4f\n", µ_num)
     @printf("rapport : %.6f\n", µ_num/µ_th)
     @printf("mu (th) : %.4f\n", µ_th)
