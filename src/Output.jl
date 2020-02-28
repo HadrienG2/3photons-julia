@@ -1,5 +1,5 @@
-# Depends on Config.jl, Errors.jl, Numeric.jl, ResCont.jl and ResFin.jl being
-# include-d beforehand
+# Depends on Config.jl, Errors.jl, EvData.jl, Numeric.jl, ResCont.jl and
+# ResFin.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -14,9 +14,10 @@ import Dates
 
 using ..Config: Configuration
 using ..Errors: @enforce
+using ..EvData: NUM_SPINS
 using ..Numeric: Float
-using ..ResCont: A, B₊, B₋, I_MX, NUM_RESULTS, R_MX
-using ..ResFin: FinalResults, NUM_SPINS, print_eric, print_fawzi, SP₋, SP₊
+using ..ResCont: A, B₊, B₋, NUM_RESULTS, R_MX
+using ..ResFin: FinalResults, print_eric, print_fawzi
 using LinearAlgebra: norm
 using Printf: @sprintf
 

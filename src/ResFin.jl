@@ -1,5 +1,5 @@
-# Depends on Config.jl, Errors.jl, EvData.jl, Numeric.jl and ResCont.jl being
-# include-d beforehand
+# Depends on Config.jl, Errors.jl, EvData.jl, Numeric.jl, ResAcc.jl and
+# ResCont.jl being include-d beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -12,157 +12,16 @@ module ResFin
 
 using ..Config: Configuration
 using ..Errors: @enforce
-using ..EvData: NUM_OUTGOING, NUM_SPINS
+using ..EvData: NUM_SPINS
 using ..Numeric: Float
-using ..ResCont: A, B₊, B₋, I_MX, m²_sums, NUM_RESULTS, ResultContribution,
-                 ResultVector, R_MX
-using LinearAlgebra: ⋅, norm
+using ..ResAcc: ResultsAccumulator
+using ..ResCont: A, B₊, B₋, I_MX, NUM_RESULTS, R_MX
+using LinearAlgebra: norm
 using Printf: @printf
 using StaticArrays: MMatrix, SMatrix, SVector, @MMatrix, @SMatrix, @SVector
 
-export integrate_contrib!, finalize_results, merge_results!, print_eric,
-       print_fawzi, ResultsBuilder, SP₋, SP₊
+export FinalResults, print_eric, print_fawzi, SP₋, SP₊
 
-
-# === RESULTS ACCUMULATION ===
-
-"""
-This struct will accumulate intermediary results during integration, and
-ultimately compute the final results (see FinalResults below).
-"""
-mutable struct ResultsBuilder
-    # === RESULT ACCUMULATORS ===
-
-    "Number of integrated events"
-    selected_events::UInt
-
-    "Accumulated cross-section for each contribution"
-    spm²::ResultVector
-
-    "Accumulated variance for each contribution"
-    vars::ResultVector
-
-    "Impact of each contribution on the cross-section"
-    σ_contribs::ResultVector
-
-    "Accumulated total cross-section"
-    σ::Float
-
-    "Accumulated total variance"
-    variance::Float
-
-    # === PHYSICAL CONSTANTS (CACHED FOR FINALIZATION) ===
-
-    "Configuration of the simulation"
-    cfg::Configuration
-
-    """
-    Common factor, non-averaged over spins=1
-                     /(symmetry factor)
-                     *(conversion factor GeV^-2->pb)
-    To average over spins, add :
-                     /(number of incoming helicities)
-    """
-    fact_com::Float
-
-    "Event weight, with total phase space normalization"
-    norm_weight::Float
-
-    "Z° propagator"
-    propag::Float
-
-    "??? (Ask Vincent Lafage)"
-    ecart_pic::Float
-end
-
-
-"Prepare for results integration"
-function ResultsBuilder(cfg::Configuration, event_weight::Float)
-    # This code depends on some aspects of the problem definition
-    @enforce (NUM_RESULTS == 5) "This code currently assumes 5 matrix elements"
-
-    # Common factor (see definition and remarks above)
-    fact_com = 1 / 6 * cfg.convers
-    gzr = cfg.g_Z⁰ / cfg.m_Z⁰
-
-    # Sum over polarisations factors
-    p_aa = 2.
-    p_ab = 1 - 4 * cfg.sin²_w
-    p_bb = p_ab + 8 * cfg.sin²_w^2
-
-    # Homogeneity coefficient
-    c_aa = fact_com * p_aa
-    c_ab = fact_com * p_ab / cfg.m_Z⁰^2
-    c_bb = fact_com * p_bb / cfg.m_Z⁰^4
-
-    # Switch to dimensionless variable
-    ζ = (cfg.e_tot / cfg.m_Z⁰)^2
-    ecart_pic = (ζ - 1) / gzr
-    propag = 1 / (1 + ecart_pic^2)
-
-    # Apply total phase space normalization to the event weight
-    norm = (2π)^(4 - 3*NUM_OUTGOING) / cfg.num_events
-    # NOTE: This replaces the original WTEV, previously reset every event
-    norm_weight = event_weight * norm
-
-    # Compute how much each result contribution adds to the cross-section.
-    # Again, this avoids duplicate work in the integration loop.
-    com_contrib = norm_weight / 4
-    aa_contrib = com_contrib * c_aa
-    bb_contrib = com_contrib * c_bb * propag / gzr^2
-    ab_contrib = com_contrib * c_ab * 2 * cfg.𝛽₊ * propag / gzr
-    σ_contribs = ResultVector(
-        aa_contrib,
-        bb_contrib * cfg.𝛽₊^2,
-        bb_contrib * cfg.𝛽₋^2,
-        ab_contrib * ecart_pic,
-        -ab_contrib,
-    )
-
-    # Return a complete results builder
-    #
-    # FIXME: Isn't there any way to say which field we are talking about?
-    #
-    ResultsBuilder(
-        0,                   # selected_events
-        zeros(NUM_RESULTS),  # spm²
-        zeros(NUM_RESULTS),  # vars
-        σ_contribs,
-        0,                   # σ
-        0,                   # variance
-
-        cfg,
-        fact_com,
-        norm_weight,
-        propag,
-        ecart_pic,
-    )
-end
-
-
-"Integrate one intermediary result into the simulation results"
-function integrate_contrib!(builder::ResultsBuilder, result::ResultContribution)
-    builder.selected_events += 1
-    spm²_dif = m²_sums(result)
-    builder.spm² += spm²_dif
-    builder.vars += spm²_dif.^2
-    weight = spm²_dif ⋅ builder.σ_contribs
-    builder.σ += weight
-    builder.variance += weight^2
-end
-
-
-"Integrate pre-aggregated results from another ResultsBuilder"
-function merge_results!(dest::ResultsBuilder, src::ResultsBuilder)
-    dest.selected_events += src.selected_events
-    dest.spm² += src.spm²
-    dest.vars += src.vars
-    dest.σ += src.σ
-    dest.variance += src.variance
-end
-
-
-# === FINAL RESULTS ===
 
 # FIXME: Need to specify SMatrix length to avoid type instability?
 """
@@ -221,23 +80,23 @@ end
 
 
 "Turn integrated simulation data into finalized results"
-function finalize_results(builder::ResultsBuilder)::FinalResults
+function FinalResults(acc::ResultsAccumulator)::FinalResults
     # This code depends on some aspects of the problem definition
     @enforce (NUM_SPINS == 2) "This code currently assumes 2 spins"
     @enforce (NUM_RESULTS == 5) "This code currently assumes 5 matrix elements"
 
     # Simulation configuration shorthands
-    cfg = builder.cfg
+    cfg = acc.cfg
     n_ev = cfg.num_events
 
     # Compute the relative uncertainties for one spin
     #
-    # FIXME: Why doesn't (v_spm², v_var) ∈ zip(builder.spm², builder.vars) work?
+    # FIXME: Why doesn't (v_spm², v_var) ∈ zip(acc.spm², acc.vars) work?
     #
     vars_1spin = @SVector [
         begin
-            v_spm² = builder.spm²[i]
-            v_var = (builder.vars[i] - v_spm²^2 / n_ev) / (n_ev - 1)
+            v_spm² = acc.spm²[i]
+            v_var = (acc.vars[i] - v_spm²^2 / n_ev) / (n_ev - 1)
             √(v_var / n_ev) / abs(v_spm² / n_ev)
         end
         for i=1:NUM_RESULTS
@@ -245,7 +104,7 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
 
     # Copy for the opposite spin
     spm² = @MMatrix [
-        builder.spm²[res]
+        acc.spm²[res]
         for _spin=1:NUM_SPINS, res=1:NUM_RESULTS
     ]
     vars = @SMatrix [
@@ -267,11 +126,11 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
     flux = 1 / (2 * cfg.e_tot^2)
 
     # Apply physical coefficients and Z⁰ propagator to each spin
-    spm² *= builder.fact_com * flux * builder.norm_weight
+    spm² *= acc.fact_com * flux * acc.norm_weight
     gm_Z⁰ = cfg.g_Z⁰ * cfg.m_Z⁰
-    spm²[:, B₊:I_MX] *= builder.propag / gm_Z⁰
+    spm²[:, B₊:I_MX] *= acc.propag / gm_Z⁰
     spm²[:, B₊:B₋] /= gm_Z⁰
-    spm²[:, R_MX] *= builder.ecart_pic
+    spm²[:, R_MX] *= acc.ecart_pic
 
     # Compute other parts of the result
     𝛽_min = √(sum(spm²[:, A]) / sum(spm²[:, B₊]))
@@ -289,16 +148,16 @@ function finalize_results(builder::ResultsBuilder)::FinalResults
     inc_ss₋ = norm(spm²[:, B₋] .* vars[:, B₋]) / abs(sum(spm²[:, B₋])) +
               inc_ss_common
 
-    variance = (builder.variance - builder.σ^2 / n_ev) / (n_ev - 1)
-    prec = √(variance / n_ev) / abs(builder.σ / n_ev)
-    σ = builder.σ * flux
+    variance = (acc.variance - acc.σ^2 / n_ev) / (n_ev - 1)
+    prec = √(variance / n_ev) / abs(acc.σ / n_ev)
+    σ = acc.σ * flux
 
     # Return the final results
     #
     # FIXME: Isn't there any way to say which field we are talking about?
     #
     FinalResults(
-        builder.selected_events,
+        acc.selected_events,
         spm²,
         vars,
         σ,

@@ -1,4 +1,5 @@
-# Depends on Errors.jl, Random.jl and ResFin.jl being include-d beforehand
+# Depends on Errors.jl, Random.jl, ResAcc.jl and ResFin.jl being include-d
+# beforehand
 #
 # FIXME: Isn't there a way to spell this out in code???
 
@@ -11,7 +12,8 @@ module Scheduling
 
 using ..Errors: @enforce
 using ..Random: RandomGenerator
-using ..ResFin: finalize_results, FinalResults, merge_results!, ResultsBuilder
+using ..ResAcc: merge_results!, ResultsAccumulator
+using ..ResFin: FinalResults
 
 export run_simulation
 
@@ -33,7 +35,7 @@ const EVENT_BATCH_SIZE = UInt(10_000)
 # FIXME: Extract sequential back-end in a separate file
 #
 # FIXME: Figure out how to cleanly express the Julia equivalent of an
-#        `impl Send + Sync + Fn(usize, RandomGenerator) -> ResultsBuilder`
+#        `impl Send + Sync + Fn(usize, RandomGenerator) -> ResultsAccumulator`
 #        static typing contract on simulate_events.
 #
 """
@@ -49,32 +51,32 @@ will start to blow up.
 """
 function run_simulation_seq(num_events::UInt,
                             rng::RandomGenerator,
-                            simulate_events::Function)::ResultsBuilder
+                            simulate_events::Function)::ResultsAccumulator
     # Some double-checking cannot hurt...
     @enforce (num_events > 0) "Must simulate at least one event"
 
     # Initialize the accumulator with the first batch of events
     first_batch_size = min(EVENT_BATCH_SIZE, num_events)
     num_events -= first_batch_size
-    accumulator = simulate_events(first_batch_size, rng)
+    res_acc = simulate_events(first_batch_size, rng)
 
     # Simulate and integrate complete batches of events (if any)
     num_full_batches = num_events / EVENT_BATCH_SIZE
     for _ = 1:num_full_batches
-        merge_results!(accumulator, simulate_events(EVENT_BATCH_SIZE, rng))
+        merge_results!(res_acc, simulate_events(EVENT_BATCH_SIZE, rng))
     end
     num_events %= EVENT_BATCH_SIZE
 
     # Integrate the remaining events
-    merge_results!(accumulator, simulate_events(num_events, rng))
+    merge_results!(res_acc, simulate_events(num_events, rng))
 
     # Return the final accumulated results
-    accumulator
+    res_acc
 end
 
 
 # FIXME: Figure out how to cleanly express the Julia equivalent of an
-#        `impl Send + Sync + Fn(usize, RandomGenerator) -> ResultsBuilder`
+#        `impl Send + Sync + Fn(usize, RandomGenerator) -> ResultsAccumulator`
 #        static typing contract on simulate_events.
 #
 """
@@ -99,10 +101,10 @@ function run_simulation(num_events::UInt, simulate_events::Function)::FinalResul
     # FIXME: Port multi-threaded simulation schedule from Rust version and
     #        expose support for it.
     #
-    results_builder = run_simulation_seq(num_events, rng, simulate_events)
+    res_acc = run_simulation_seq(num_events, rng, simulate_events)
 
     # Finalize the results
-    finalize_results(results_builder)
+    FinalResults(res_acc)
 end
 
 end

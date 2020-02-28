@@ -66,11 +66,14 @@ include("Config.jl")      # Depends on: Errors.jl, EvCut.jl, Numeric.jl
 include("Coupling.jl")    # Depends on: Config.jl, Numeric.jl
 include("ResCont.jl")     # Depends on: Coupling.jl, Errors.jl, EvData.jl,
                           #             Numeric.jl
-include("ResFin.jl")      # Depends on: Config.jl, Errors.jl, EvData.jl,
+include("ResAcc.jl")      # Depends on: Config.jl, Errors.jl, EvData.jl,
                           #             Numeric.jl, ResCont.jl
-include("Output.jl")      # Depends on: Config.jl, Numeric.jl, ResCont.jl,
+include("ResFin.jl")      # Depends on: Config.jl, Errors.jl, EvData.jl,
+                          #             Numeric.jl, ResAcc.jl, ResCont.jl
+include("Output.jl")      # Depends on: Config.jl, EvData.jl, Numeric.jl,
+                          #             ResCont.jl, ResFin.jl
+include("Scheduling.jl")  # Depends on: Errors.jl, Random.jl, ResAcc.jl,
                           #             ResFin.jl
-include("Scheduling.jl")  # Depends on: Errors.jl, Random.jl, ResFin.jl
 
 
 "Artificial module introduced as a performance optimization"
@@ -83,7 +86,7 @@ using ..EvGen: EventGenerator, generate_event!
 using ..Output: dump_results
 using ..Random: RandomGenerator
 using ..ResCont: ResultContribution
-using ..ResFin: integrate_contrib!, ResultsBuilder
+using ..ResAcc: integrate_contrib!, ResultsAccumulator
 using ..Scheduling: run_simulation
 
 export main
@@ -125,9 +128,9 @@ function main(;jit_warmup::Bool=false)
     This kernel simulates a number of events, given an initial random number
     generator state, and return the accumulated intermediary results.
     """
-    function simulate_events(num_events::UInt, rng::RandomGenerator)::ResultsBuilder
+    function simulate_events(num_events::UInt, rng::RandomGenerator)::ResultsAccumulator
         # Setup a results accumulator
-        res_builder = ResultsBuilder(cfg, evgen.event_weight)
+        res_acc = ResultsAccumulator(cfg, evgen.event_weight)
 
         # Simulate the requested number of events
         for _ = 1:num_events
@@ -139,13 +142,13 @@ function main(;jit_warmup::Bool=false)
             if keep_event(cfg.event_cut, event)
                 res_contrib = ResultContribution(couplings, event)
                 # NOTE: The original code would display the result here
-                integrate_contrib!(res_builder, res_contrib)
+                integrate_contrib!(res_acc, res_contrib)
                 # NOTE: The FORTRAN code would fill histograms here
             end
         end
 
         # Return the accumulated results
-        res_builder
+        res_acc
     end
 
     # Run the simulation
