@@ -44,10 +44,10 @@ initialization from the original C++ 3photons code.
 function EventGenerator(e_tot::Float; jit_warmup::Bool=false)
     # Check on the number of particles. The check for N<101 is gone since unlike
     # the original RAMBO, we don't use arrays of hardcoded size.
-    @enforce (NUM_OUTGOING > 1)
+    @enforce (NUM_OUTGOING > 1) "At least one particle should be coming out"
 
     # As currently written, this code only works for two incoming particles
-    @enforce (NUM_INCOMING == 2)
+    @enforce (NUM_INCOMING == 2) "This code assumes two incoming particles"
 
     # Compute some numerical constants. Replaces the lazy initialization from
     # the original RAMBO code with something less branchy.
@@ -92,9 +92,6 @@ The output momenta are provided as a matrix where rows are 4-momentum
 components (Px, Py, Pz, E) and columns are particles.
 """
 function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Float}
-    # Must be generalized to support NUM_OUTGOING != 3
-    @enforce (NUM_OUTGOING == 3) "This function assumes 3 outgoing particles"
-
     # This implementation targets maximal reproducibility with respect to the
     # original 3photons program, at the expense of performance.
     #

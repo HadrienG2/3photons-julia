@@ -63,7 +63,7 @@ function random_vector!(rng::RanfGenerator, ::Val{N})::SVector{N, Float} where N
     # allows us to take implementation and performance shortcuts.
     round_size = length(rng.numbers) - 1
     @enforce (N < round_size) """
-    Current algorithm only supports emitting a round of numbers at a time
+    This code can only emit at most one round of random numbers at a time
     """
 
     # In principle, we could reuse the remaining numbers in the active round, in

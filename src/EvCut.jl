@@ -65,7 +65,7 @@ function keep_event(cut::EventCut, event::Event)::Bool
 
     # Compute a vector which is normal to the outgoing photon plane
     # NOTE: This notion is only valid because we have three output photons
-    @enforce (NUM_OUTGOING == 3) "This part assumes 3 outgoing particles"
+    @enforce (NUM_OUTGOING == 3) "This code assumes 3 outgoing particles"
     n_ppp = ps_out[1, XYZ] × ps_out[2, XYZ]
 
     # Compute the cosine of the angle between the beam and this vector

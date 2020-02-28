@@ -82,7 +82,7 @@ end
 "Turn integrated simulation data into finalized results"
 function FinalResults(acc::ResultsAccumulator)::FinalResults
     # This code depends on some aspects of the problem definition
-    @enforce (NUM_SPINS == 2) "This code assumes 2 spins"
+    @enforce (NUM_SPINS == 2) "This code assumes particles of spin +/-1"
     @enforce (NUM_MAT_ELEMS == 5) "This code assumes 5 matrix elements"
 
     # Simulation configuration shorthands

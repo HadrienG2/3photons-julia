@@ -20,7 +20,7 @@ export 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, NUM_HELICITIES, PhotonHelicities, Spi
 # PhotonHelicities declaration and SpinorProducts methods are very specific to
 # our simulation's e+e- -> ppp configuration.
 @enforce (NUM_INCOMING == 2) && (NUM_OUTGOING == 3) && (NUM_SPINS == 2) """
-This code assumes two incoming particles and three outgoing photons
+This code assumes 2 incoming particles and 3 outgoing photons
 """
 
 

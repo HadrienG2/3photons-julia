@@ -9,7 +9,7 @@ module MatElems
 
 using ..Coupling: Couplings
 using ..Errors: @enforce
-using ..EvData: Event, NUM_OUTGOING
+using ..EvData: Event
 using ..Numeric: Float
 using ..Spinor: 𝛼_amp, 𝛽₊_amp, 𝛽₋_amp, HELICITIES, NUM_HELICITIES,
                 SpinorProducts
@@ -51,9 +51,6 @@ const MEsContributions = SMatrix{NUM_MAT_ELEMS, NUM_HELICITIES, Float, NUM_MAT_E
 
 "Construct the matrix element contributions from the event data"
 function MEsContributions(couplings::Couplings, event::Event)
-    # This code is very specific to the current problem definition
-    @enforce (NUM_MAT_ELEMS == 5) "This code assumes 5 matrix elements"
-
     # Compute spinor inner products
     spinor = SpinorProducts(event)
 
@@ -65,6 +62,7 @@ function MEsContributions(couplings::Couplings, event::Event)
     mixed_amps = 2(𝛼_amps .* conj(𝛽₊_amps))
 
     # Compute the matrix elements
+    @enforce (NUM_MAT_ELEMS == 5) "This code assumes 5 matrix elements"
     @SMatrix [
         if elem == A
             abs2(𝛼_amps[hel])
