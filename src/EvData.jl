@@ -3,6 +3,8 @@
 # FIXME: Isn't there a way to spell this out in code???
 
 
+# FIXME: This module would be best called Event, but this clashes with the name
+#        of the inner Event struct...
 "Event definition and storage"
 module EvData
 
