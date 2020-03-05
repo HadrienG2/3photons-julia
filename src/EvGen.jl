@@ -4,7 +4,7 @@
 # FIXME: Isn't there a way to spell this out in code???
 
 
-"Event generation and storage"
+"Event generation facilities"
 module EvGen
 
 using ..Errors: @enforce
