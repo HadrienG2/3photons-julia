@@ -48,7 +48,7 @@ function dump_results(cfg::Configuration,
     println_3p(file, str) = println(file, " ", str)
     label_3p(key) = @sprintf("%-31s: ", key)
     format_3p(val) = string(val)
-    # FIXME: Should honor sig_digits here, but @sprintf only supports static
+    # FIXME: Should honor SIG_DIGITS here, but @sprintf only supports static
     #        format string and doesn't support .* for externally controlled
     #        precision. Tried Formatting, but it doesn't even support %g...
     format_3p(val::AbstractFloat) = @sprintf("%.14g", val)
@@ -95,7 +95,7 @@ function dump_results(cfg::Configuration,
         println_3p(dat_file, "Section Efficace          (pb)", res.σ)
         println_3p(dat_file, "Ecart-Type                (pb)", res.σ*res.prec)
         # Work around opinion divergence between Rust and Julia's %g logic
-        # FIXME: Should honor sig_digits precision here, but see above.
+        # FIXME: Should honor SIG_DIGITS precision here, but see above.
         prec_str = @sprintf("%.13e", res.prec)
         println_3p(dat_file, "Precision Relative", prec_str)
         println_3p(dat_file, "---------------------------------------------")
@@ -109,7 +109,7 @@ function dump_results(cfg::Configuration,
 
         # Write more results (nature and purpose unclear in C++ code...)
         println(dat_file)
-        decimals = min(sig_digits-1, 7)
+        decimals = min(SIG_DIGITS-1, 7)
         for sp=1:NUM_SPINS
             for elem=1:NUM_MAT_ELEMS
                 println(
