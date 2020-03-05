@@ -44,28 +44,28 @@ function dump_results(cfg::Configuration,
     sig_digits = floor(Int, -log10(eps(Float))) - 1
 
     # Facilities for replicating 3photons' output styling
-    writeln(file) = write(file, "\n")
-    writeln(file, str) = write(file, " $str\n")
-    label(key) = @sprintf("%-31s: ", key)
-    format(value) = string(value)
+    writeln_3p(file) = write(file, "\n")
+    writeln_3p(file, str) = write(file, " $str\n")
+    label_3p(key) = @sprintf("%-31s: ", key)
+    format_3p(val) = string(val)
     # FIXME: Should honor sig_digits here, but @sprintf only supports static
     #        format string and doesn't support .* for externally controlled
     #        precision. Tried Formatting, but it doesn't even support %g...
-    format(value::AbstractFloat) = @sprintf("%.14g", value)
-    writeln(file, key, value) = writeln(file, label(key)*format(value))
+    format_3p(val::AbstractFloat) = @sprintf("%.14g", val)
+    writeln_3p(file, key, val) = writeln_3p(file, label_3p(key)*format_3p(val))
 
     # Write execution timings to a file
     open("res.times", "w") do tim_file
         # Write a timestamp of when the run ended
-        writeln(tim_file, timestamp)
+        writeln_3p(tim_file, timestamp)
 
         # Write program performance stats
-        writeln(tim_file, "---------------------------------------------")
-        writeln(tim_file, "Temps ecoule", "???")
-        writeln(tim_file, "Temps ecoule utilisateur", elapsed_secs)
-        writeln(tim_file, "Temps ecoule systeme", "???")
+        writeln_3p(tim_file, "---------------------------------------------")
+        writeln_3p(tim_file, "Temps ecoule", "???")
+        writeln_3p(tim_file, "Temps ecoule utilisateur", elapsed_secs)
+        writeln_3p(tim_file, "Temps ecoule systeme", "???")
         secs_per_ev = elapsed_secs / cfg.num_events
-        writeln(tim_file, "Temps ecoule par evenement", secs_per_ev)
+        writeln_3p(tim_file, "Temps ecoule par evenement", secs_per_ev)
     end
 
     # Write main results file. Try to mimick the original C++ format as well as
@@ -75,42 +75,44 @@ function dump_results(cfg::Configuration,
         ev_cut = cfg.event_cut
 
         # Write the results to the file
-        writeln(dat_file, "Nombre d'evenements", cfg.num_events)
-        writeln(dat_file, "... apres coupure", res.selected_events)
-        writeln(dat_file, "energie dans le CdM      (GeV)", cfg.e_tot)
-        writeln(dat_file, "coupure / cos(photon,faisceau)", ev_cut.a_cut)
-        writeln(dat_file, "coupure / cos(photon,photon)", ev_cut.b_cut)
-        writeln(dat_file, "coupure / sin(normale,faisceau)", ev_cut.sin_cut)
-        writeln(dat_file, "coupure sur l'energie    (GeV)", ev_cut.e_min)
-        writeln(dat_file, "1/(constante de structure fine)", 1/cfg.𝛼)
-        writeln(dat_file, "1/(structure fine au pic)", 1/cfg.𝛼_Z)
-        writeln(dat_file, "facteur de conversion GeV-2/pb", cfg.convers)
-        writeln(dat_file, "Masse du Z0              (GeV)", cfg.m_Z⁰)
-        writeln(dat_file, "Largeur du Z0            (GeV)", cfg.g_Z⁰)
-        writeln(dat_file, "Sinus^2 Theta Weinberg", cfg.sin²_w)
-        writeln(dat_file, "Taux de branchement Z--->e+e-", cfg.br_e₊_e₋)
-        writeln(dat_file, "Beta plus", cfg.𝛽₊)
-        writeln(dat_file, "Beta moins", cfg.𝛽₋)
-        writeln(dat_file, "---------------------------------------------")
-        writeln(dat_file, "Section Efficace          (pb)", res.σ)
-        writeln(dat_file, "Ecart-Type                (pb)", res.σ*res.prec)
+        writeln_3p(dat_file, "Nombre d'evenements", cfg.num_events)
+        writeln_3p(dat_file, "... apres coupure", res.selected_events)
+        writeln_3p(dat_file, "energie dans le CdM      (GeV)", cfg.e_tot)
+        writeln_3p(dat_file, "coupure / cos(photon,faisceau)", ev_cut.a_cut)
+        writeln_3p(dat_file, "coupure / cos(photon,photon)", ev_cut.b_cut)
+        writeln_3p(dat_file, "coupure / sin(normale,faisceau)", ev_cut.sin_cut)
+        writeln_3p(dat_file, "coupure sur l'energie    (GeV)", ev_cut.e_min)
+        writeln_3p(dat_file, "1/(constante de structure fine)", 1/cfg.𝛼)
+        writeln_3p(dat_file, "1/(structure fine au pic)", 1/cfg.𝛼_Z)
+        writeln_3p(dat_file, "facteur de conversion GeV-2/pb", cfg.convers)
+        writeln_3p(dat_file, "Masse du Z0              (GeV)", cfg.m_Z⁰)
+        writeln_3p(dat_file, "Largeur du Z0            (GeV)", cfg.g_Z⁰)
+        writeln_3p(dat_file, "Sinus^2 Theta Weinberg", cfg.sin²_w)
+        writeln_3p(dat_file, "Taux de branchement Z--->e+e-", cfg.br_e₊_e₋)
+        writeln_3p(dat_file, "Beta plus", cfg.𝛽₊)
+        writeln_3p(dat_file, "Beta moins", cfg.𝛽₋)
+        writeln_3p(dat_file, "---------------------------------------------")
+        writeln_3p(dat_file, "Section Efficace          (pb)", res.σ)
+        writeln_3p(dat_file, "Ecart-Type                (pb)", res.σ*res.prec)
         # Work around opinion divergence between Rust and Julia's %g logic
         # FIXME: Should honor sig_digits precision here, but see above.
         prec_str = @sprintf("%.13e", res.prec)
-        writeln(dat_file, "Precision Relative", prec_str)
-        writeln(dat_file, "---------------------------------------------")
-        writeln(dat_file, "Beta minimum", res.𝛽_min)
-        writeln(dat_file, "Stat. Significance  B+(pb-1/2)", res.ss₊)
-        writeln(dat_file, "Incert. Stat. Sign. B+(pb-1/2)", res.ss₊*res.inc_ss₊)
-        writeln(dat_file, "Stat. Significance  B-(pb-1/2)", res.ss₋)
-        writeln(dat_file, "Incert. Stat. Sign. B-(pb-1/2)", res.ss₋*res.inc_ss₋)
+        writeln_3p(dat_file, "Precision Relative", prec_str)
+        writeln_3p(dat_file, "---------------------------------------------")
+        writeln_3p(dat_file, "Beta minimum", res.𝛽_min)
+        writeln_3p(dat_file, "Stat. Significance  B+(pb-1/2)", res.ss₊)
+        incert_ss₊ = res.ss₊*res.inc_ss₊
+        writeln_3p(dat_file, "Incert. Stat. Sign. B+(pb-1/2)", incert_ss₊)
+        writeln_3p(dat_file, "Stat. Significance  B-(pb-1/2)", res.ss₋)
+        incert_ss₋ = res.ss₋*res.inc_ss₋
+        writeln_3p(dat_file, "Incert. Stat. Sign. B-(pb-1/2)", incert_ss₋)
 
         # Write more results (nature and purpose unclear in C++ code...)
-        writeln(dat_file)
+        writeln_3p(dat_file)
         decimals = min(sig_digits-1, 7)
         for sp=1:NUM_SPINS
             for elem=1:NUM_MAT_ELEMS
-                writeln(
+                writeln_3p(
                     dat_file,
                     # FIXME: Should honor decimals precision here, but see above
                     @sprintf("%2d%3d%15.7e%15.7e%15.7e",
@@ -121,12 +123,12 @@ function dump_results(cfg::Configuration,
                              res.vars[sp, elem])
                 )
             end
-            writeln(dat_file)
+            writeln_3p(dat_file)
         end
         for elem=1:NUM_MAT_ELEMS
             tmp₁ = sum(res.spm²[:, elem])
             tmp₂ = norm(res.spm²[:, elem] .* res.vars[:, elem])
-            writeln(
+            writeln_3p(
                 dat_file,
                 # FIXME: Should honor decimals precision here, but see above
                 @sprintf("  %3d%15.7e%15.7e%15.7e",
