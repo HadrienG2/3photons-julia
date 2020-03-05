@@ -11,7 +11,7 @@ export @enforce
 
 """
 Simplified variant of standard @assert macro that does not come with a "may be
-disabled at various optimization levels" caveat.
+disabled at various optimization levels" caveat attached.
 """
 macro enforce(expr, msgs...)
     msg_body = isempty(msgs) ? expr : msgs[1]

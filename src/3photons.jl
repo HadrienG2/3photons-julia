@@ -97,7 +97,12 @@ function main(;jit_warmup::Bool=false)
     # === CONFIGURATION READOUT ===
 
     # Load the configuration from its file
-    cfg = Configuration("valeurs"; jit_warmup=jit_warmup)
+    cfg = try
+        Configuration("valeurs"; jit_warmup=jit_warmup)
+    catch e
+        println("Failed to load the configuration")
+        rethrow(e)
+    end
 
     # === SIMULATION INITIALIZATION ===
 
@@ -163,7 +168,12 @@ function main(;jit_warmup::Bool=false)
 
     # Send the results to the standard output and to disk
     if !jit_warmup
-        dump_results(cfg, result, elapsed_secs)
+        try
+            dump_results(cfg, result, elapsed_secs)
+        catch e
+            println("Failed to output the results")
+            rethrow(e)
+        end
     end
 end
 

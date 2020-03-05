@@ -77,7 +77,7 @@ function ResultsAccumulator(cfg::Configuration, event_weight::Float)
     gzr = cfg.g_Z⁰ / cfg.m_Z⁰
 
     # Sum over polarisations factors
-    p_aa = 2.
+    p_aa = 2
     p_ab = 1 - 4 * cfg.sin²_w
     p_bb = p_ab + 8 * cfg.sin²_w^2
 

@@ -3,9 +3,10 @@
 # FIXME: Isn't there a way to spell this out in code???
 
 
+# FIXME: Change description once xoshiro support is added
 """
 Random number generation module. Uses either a port of 3photon's ranf random
-number generator or the "rand" crate that is the Rust standard for RNGs.
+number generator for reproducibility with the original code.
 """
 module Random
 
@@ -17,7 +18,7 @@ export RandomGenerator, random!
 
 
 # Generated random numbers will have a granularity of 1/MODULO
-const Integer = Int32
+const RanfInt = Int32
 const MODULO = 1_000_000_000
 const INV_MODULO = 1 / MODULO
 
@@ -25,10 +26,10 @@ const INV_MODULO = 1 / MODULO
 "Random number generator, from Knuth's ranf (in Seminumerical Algorithm)"
 mutable struct RanfGenerator
     "Seed which this generator was initialized with"
-    seed::Integer
+    seed::RanfInt
 
     "Current set of random numbers, maps to IA in original code"
-    numbers::MVector{56, Integer}
+    numbers::MVector{56, RanfInt}
 
     "Index of the current random number, maps to MCALL in original code"
     index::UInt
@@ -63,7 +64,7 @@ function random_vector!(rng::RanfGenerator, ::Val{N})::SVector{N, Float} where N
     # allows us to take implementation and performance shortcuts.
     round_size = length(rng.numbers) - 1
     @enforce (N < round_size) """
-    This code can only emit at most one round of random numbers at a time
+    Current algorithm only supports a round of numbers at a time
     """
 
     # In principle, we could reuse the remaining numbers in the active round, in
@@ -96,7 +97,7 @@ end
 Create a new generator with an arbitrary seed.
 This roughly maps to the IN55 method in the original code.
 """
-function seeded_new(seed::Integer)::RanfGenerator
+function seeded_new(seed::RanfInt)::RanfGenerator
     # Start by zero-initializing the generator state
     #
     # FIXME: Isn't there any way to say which field we are talking about?
@@ -135,7 +136,7 @@ end
 function RanfGenerator()
     # TODO: Would be nice to figure out the seed constraints of seeded_new and
     #       publicize that interface too.
-    seeded_new(Integer(234612947))
+    seeded_new(RanfInt(234_612_947))
 end
 
 

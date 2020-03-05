@@ -45,7 +45,15 @@ const I_MX = 5
 # === PER-HELICITY CONTRIBUTIONS TO MATRIX ELEMENTS ===
 
 # FIXME: Need to specify SMatrix length to avoid type instability?
-"Array of squared matrix elements contributions, with detail of helicities"
+"""
+Array of squared matrix elements contributions, with detail of helicities
+
+The rows are the same as in ResultVector, the columns map to spin configurations
+encoded as a binary number:
+    - Configuration 0 (0b000) is ---
+    - Configuration 1 (0b001) is --+
+    - And so on...
+"""
 const MEsContributions = SMatrix{NUM_MAT_ELEMS, NUM_HELICITIES, Float, NUM_MAT_ELEMS*NUM_HELICITIES}
 
 

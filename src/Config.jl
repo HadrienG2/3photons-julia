@@ -117,12 +117,23 @@ function Configuration(file_name::AbstractString; jit_warmup::Bool=false)
         non_empty_it = Iterators.filter(a -> length(a) > 0, split_first_it)
         first_field_it = IterTools.imap(a -> a[1], non_empty_it)
 
-        # Fetch and decode the next config file entry, given its type
+        # Fetch and decode the next config file entry, given its name & type
         next = iterate(first_field_it)
-        function next_entry!(ty::DataType)
-            (field, state) = next
-            next = iterate(first_field_it, state)
-            parse_entry(ty, field)
+        function next_entry!(name::AbstractString, ty::DataType)
+            field = try
+                (field, state) = next
+                next = iterate(first_field_it, state)
+                field
+            catch e
+                println("Missing configuration of $name")
+                rethrow(e)
+            end
+            try
+                parse_entry(ty, field)
+            catch e
+                println("Could not parse configuration of $name")
+                rethrow(e)
+            end
         end
         
         # Decode the configuration
@@ -130,26 +141,26 @@ function Configuration(file_name::AbstractString; jit_warmup::Bool=false)
         # FIXME: Isn't there any way to say which field we are talking about?
         #
         config = Configuration(
-            next_entry!(UInt),       # num_events
-            next_entry!(Float),      # e_tot
+            next_entry!("num_events", UInt),
+            next_entry!("e_tot", Float),
             EventCut(
-                next_entry!(Float),  # a_cut
-                next_entry!(Float),  # b_cut
-                next_entry!(Float),  # e_min
-                next_entry!(Float),  # sin_cut
+                next_entry!("a_cut", Float),
+                next_entry!("b_cut", Float),
+                next_entry!("e_min", Float),
+                next_entry!("sin_cut", Float),
             ),
-            next_entry!(Float),      # 𝛼
-            next_entry!(Float),      # 𝛼_Z
-            next_entry!(Float),      # convers
-            next_entry!(Float),      # m_Z⁰
-            next_entry!(Float),      # g_Z⁰
-            next_entry!(Float),      # sin²_w
-            next_entry!(Float),      # br_e₊_e₋
-            next_entry!(Float),      # 𝛽₊
-            next_entry!(Float),      # 𝛽₋
-            next_entry!(Int32),      # n_bin
-            next_entry!(Bool),       # impr
-            next_entry!(Bool),       # plot
+            next_entry!("𝛼", Float),
+            next_entry!("𝛼_Z", Float),
+            next_entry!("convers", Float),
+            next_entry!("m_Z⁰", Float),
+            next_entry!("g_Z⁰", Float),
+            next_entry!("sin²_w", Float),
+            next_entry!("br_e₊_e₋", Float),
+            next_entry!("𝛽₊", Float),
+            next_entry!("𝛽₋", Float),
+            next_entry!("n_bin", Int32),
+            next_entry!("impr", Bool),
+            next_entry!("plot", Bool),
         )
 
         # Display it like the C++ version would (this eases comparisons)
@@ -163,7 +174,8 @@ function Configuration(file_name::AbstractString; jit_warmup::Bool=false)
         # We don't support the original code's PAW-based plotting features, so
         # we make sure that they weren't enabled.
         #
-        # FIXME: Consider enabling some plotting in the Julia version later.
+        # TODO: Consider bringing back plotting in the Julia version later, that
+        #       should be easier than in the Rust version.
         #
         @enforce (!config.plot) "Plotting is not supported by this version"
 
@@ -171,8 +183,8 @@ function Configuration(file_name::AbstractString; jit_warmup::Bool=false)
         # all intermediary results during sampling. Such a feature should be set
         # up at build time to avoid run-time costs.
         #
-        # FIXME: Revise this design decision for the Julia version. The compile
-        #        time versus run-time distinction works differently here.
+        # TODO: Revise this Rust version design decision for the Julia version.
+        #       With JITting, compile/run time tradeoffs work differently.
         #
         @enforce (!config.impr) """
         Individual result printing is not supported.

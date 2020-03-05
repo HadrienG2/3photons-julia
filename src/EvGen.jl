@@ -66,7 +66,7 @@ function EventGenerator(e_tot::Float; jit_warmup::Bool=false)
 
     # All generated events will have the same weight: pre-compute it
     ln_weight = (2*NUM_OUTGOING - 4) * log(e_tot) + z
-    @enforce (ln_weight ≥ -180 && ln_weight < 174)
+    @enforce (ln_weight ≥ -180 && ln_weight ≤ 174)
     event_weight = exp(ln_weight)
 
     # Compute the incoming particle momenta
@@ -95,7 +95,7 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Flo
     # This implementation targets maximal reproducibility with respect to the
     # original 3photons program, at the expense of performance.
     #
-    # FIXME: Provide and expose a port of Rust version's faster-evgen impl'
+    # FIXME: Provide and expose a port of Rust version's faster-evgen mode
 
     # Generate the basic random parameters of the particles
     # (This code is convoluted because it replicates the RNG call order of the
@@ -176,7 +176,7 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
     #
     # FIXME: Make this optional, as in Rust version
     #
-    for par1=1:NUM_OUTGOING, par2=par1+1:NUM_OUTGOING
+    for par1=1:NUM_OUTGOING-1, par2=par1+1:NUM_OUTGOING
         if p_e[par2] > p_e[par1]
             p_e[par1], p_e[par2] = p_e[par2], p_e[par1]
             p_xyz[par1, :], p_xyz[par2, :] = p_xyz[par2, :], p_xyz[par1, :]
