@@ -142,12 +142,11 @@ function FinalResults(acc::ResultsAccumulator)::FinalResults
     ss₊ = sum(spm²[:, B₊]) * ss_norm
     ss₋ = sum(spm²[:, B₋]) * ss_norm
 
-    inc_ss_common = norm(spm²[:, A] .* vars[:, A]) / (2 * abs(ss_denom))
-
-    inc_ss₊ = norm(spm²[:, B₊] .* vars[:, B₊]) / abs(sum(spm²[:, B₊])) +
-              inc_ss_common
-    inc_ss₋ = norm(spm²[:, B₋] .* vars[:, B₋]) / abs(sum(spm²[:, B₋])) +
-              inc_ss_common
+    inc_num(col) = norm(spm²[:, col] .* vars[:, col])
+    inc_ss_common = inc_num(A) / (2 * abs(ss_denom))
+    inc(col) = inc_num(col) / abs(sum(spm²[:, col])) + inc_ss_common
+    inc_ss₊ = inc(B₊)
+    inc_ss₋ = inc(B₋)
 
     variance = (acc.variance - acc.σ^2 / n_ev) / (n_ev - 1)
     prec = √(variance / n_ev) / abs(acc.σ / n_ev)
@@ -185,7 +184,7 @@ function print_eric(results::FinalResults)
     µ_th = cfg.br_e₊_e₋ * cfg.convers / (8 * 9 * 5 * π^2 * cfg.m_Z⁰ * cfg.g_Z⁰)
     σ₀ = spm²[:, A] / 2
     𝛼₀ = spm²[:, I_MX] / 2
-    𝛽₀ = spm²[:, R_MX] / 2
+    𝛽₀ = -spm²[:, R_MX] / 2
     λ₀ = (spm²[:, B₋] - spm²[:, B₊]) / 2
     µ₀ = (spm²[:, B₋] + spm²[:, B₊]) / 2
     µ_num = sum(spm²[:, B₊:B₋]) / 4
@@ -241,8 +240,9 @@ function print_fawzi(results::FinalResults)
 
     mc₊ = sum(spm²[:, B₊]) / 4
     mc₋ = sum(spm²[:, B₋]) / 4
-    incr₊ = norm(spm²[:, B₊] .* vars[:, B₊]) / abs(sum(spm²[:, B₊]))
-    incr₋ = norm(spm²[:, B₋] .* vars[:, B₋]) / abs(sum(spm²[:, B₋]))
+    incr(col) = norm(spm²[:, col] .* vars[:, col]) / abs(sum(spm²[:, col]))
+    incr₊ = incr(B₊)
+    incr₋ = incr(B₋)
 
     println()
     println("s (pb) :   Sig_cut_Th    Sig_Th      Rapport")

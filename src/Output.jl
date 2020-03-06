@@ -101,10 +101,10 @@ function dump_results(cfg::Configuration,
         println_3p(dat_file, "---------------------------------------------")
         println_3p(dat_file, "Beta minimum", res.𝛽_min)
         println_3p(dat_file, "Stat. Significance  B+(pb-1/2)", res.ss₊)
-        incert_ss₊ = res.ss₊*res.inc_ss₊
+        incert_ss₊ = res.ss₊ * res.inc_ss₊
         println_3p(dat_file, "Incert. Stat. Sign. B+(pb-1/2)", incert_ss₊)
         println_3p(dat_file, "Stat. Significance  B-(pb-1/2)", res.ss₋)
-        incert_ss₋ = res.ss₋*res.inc_ss₋
+        incert_ss₋ = res.ss₋ * res.inc_ss₋
         println_3p(dat_file, "Incert. Stat. Sign. B-(pb-1/2)", incert_ss₋)
 
         # Write more results (nature and purpose unclear in C++ code...)

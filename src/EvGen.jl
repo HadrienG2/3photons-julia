@@ -100,24 +100,27 @@ function generate_event_raw!(rng::RandomGenerator)::SMatrix{4, NUM_OUTGOING, Flo
     # Generate the basic random parameters of the particles
     # (This code is convoluted because it replicates the RNG call order of the
     # original 3photons program, which itself isn't so straightforward)
+    cos_θ_idx = 1
+    φ_idx = 2
+    exp_min_e_idx = 3
     params = @SMatrix [
-        if row == 1
+        if row == cos_θ_idx
             2*random!(rng) - 1
-        elseif row == 2
+        elseif row == φ_idx
             2π * random!(rng)
-        elseif row == 3
+        elseif row == exp_min_e_idx
             random!(rng) * random!(rng)
         else
             throw(AssertionError("Unexpected parameter"))
         end
         for row=1:3, _part=1:NUM_OUTGOING
     ]
-    cos_θ = params[1, :]
-    φ = params[2, :]
-    exp_min_e = params[3, :]
+    cos_θ = params[cos_θ_idx, :]
+    φ = params[φ_idx, :]
+    exp_min_e = params[exp_min_e_idx, :]
 
     # Compute the outgoing momenta
-    # NOTE: Unlike Rust, Julia needs manual sincos optimization here
+    # NOTE: Unlike Rust, Julia benefits from manual sincos optimization here
     sincos_φ = sincos.(φ)
     sin_θ = sqrt.(1 .- cos_θ.^2)
     energy = -log.(nextfloat.(exp_min_e))
