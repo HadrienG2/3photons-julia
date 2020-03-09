@@ -34,6 +34,7 @@ const NUM_SPINS = 2
 # === EVENT DATA STORAGE ===
 
 # FIXME: Need to specify SMatrix length to avoid type instability in structs?
+# FIXME: How to specify that NO_PHOTON_SORTING should be a Bool?
 "Storage for ee -> ppp event data"
 struct Event{NO_PHOTON_SORTING}
     "Matrix of incoming and outgoing 4-momenta"

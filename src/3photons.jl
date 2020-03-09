@@ -101,6 +101,7 @@ function main(
     # === CONFIGURATION READOUT ===
 
     # Load the configuration from its file
+    # TODO: Optimize this after optimizing simulation body
     cfg = try
         Configuration("valeurs"; jit_warmup=jit_warmup)
     catch e
@@ -163,8 +164,10 @@ function main(
     end
 
     # Run the simulation
+    # TODO: Optimize this first
     num_events = jit_warmup ? UInt(1) : cfg.num_events
-    result = run_simulation(num_events, simulate_events)
+    print("DEBUG: Running simulation body... ")
+    @time result = run_simulation(num_events, simulate_events)
 
     # NOTE: This is where the FORTRAN code would normalize histograms
 
@@ -174,6 +177,7 @@ function main(
     elapsed_secs = time() - start_time_s
 
     # Send the results to the standard output and to disk
+    # TODO: Optimize this after optimizing simulation body
     if !jit_warmup
         try
             dump_results(cfg, result, elapsed_secs)
