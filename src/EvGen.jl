@@ -19,8 +19,11 @@ using StaticArrays: MMatrix, MVector, SMatrix, SVector, @SMatrix, @SVector
 export EventGenerator, generate_event!
 
 
+# FIXME: How to express that NO_PHOTON_SORTING should be a Bool? Merely typing
+#        NO_PHOTON_SORTING<:Bool doesn't work, calling constructor with a
+#        Val(true) argument for a no_photon_sorting leads to a method mismatch.
 "Generator of ee -> ppp events"
-struct EventGenerator
+struct EventGenerator{NO_PHOTON_SORTING}
     "Total center-of-mass energy of the collision"
     e_tot::Float
 
@@ -30,6 +33,9 @@ struct EventGenerator
     # FIXME: Need to specify SMatrix length to avoid type instability?
     "Incoming electron and positron momenta"
     incoming_momenta::SMatrix{NUM_INCOMING, 4, Float, NUM_INCOMING*4}
+
+    "Disable sorting of photons by energy"
+    no_photon_sorting::Val{NO_PHOTON_SORTING}
 end
 
 
@@ -41,7 +47,11 @@ Initialize event generation for a center-of-mass energy of e_tot.
 Combines former functionality of ppp constructor and IBEGIN-based lazy
 initialization from the original C++ 3photons code.
 """
-function EventGenerator(e_tot::Float; jit_warmup::Bool=false)
+function EventGenerator(
+    e_tot::Float,
+    no_photon_sorting::Val{NO_PHOTON_SORTING};
+    jit_warmup::Bool=false
+) where NO_PHOTON_SORTING
     # Check on the number of particles. The check for N<101 is gone since unlike
     # the original RAMBO, we don't use arrays of hardcoded size.
     @enforce (NUM_OUTGOING > 1) "At least one particle should be coming out"
@@ -79,6 +89,7 @@ function EventGenerator(e_tot::Float; jit_warmup::Bool=false)
         e_tot,
         event_weight,
         incoming_momenta,
+        no_photon_sorting
     )
 end
 
@@ -151,7 +162,10 @@ All events have the same weight, it can be queried via evgen.event_weight.
 
 The 4-momenta of output photons are sorted by decreasing energy.
 """
-function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
+function generate_event!(
+    rng::RandomGenerator,
+    evgen::EventGenerator{NO_PHOTON_SORTING}
+)::Event{NO_PHOTON_SORTING} where NO_PHOTON_SORTING
     # Generate massless outgoing momenta in infinite phase space
     q = generate_event_raw!(rng)
 
@@ -163,39 +177,37 @@ function generate_event!(rng::RandomGenerator, evgen::EventGenerator)::Event
     β = 1 / (r_norm + r[E])
 
     # Perform the conformal transformation from Q's to output 4-momenta
-    #
-    # FIXME: Switch to SVector in no-photon-sorting mode, once added, as that
-    #        will rid us of a few remaining heap allocations.
-    #
     tr_q = transpose(q)
     rq = tr_q[:, XYZ] * r[XYZ]
-    p_e = MVector{NUM_OUTGOING}(α * (r[E] * tr_q[:, E] - rq))
+    p_e_svector = α * (r[E] * tr_q[:, E] - rq)
+    p_e = NO_PHOTON_SORTING ? p_e_svector : MVector(p_e_svector)
     b_rq_e = β * rq - tr_q[:, E]
-    p_xyz = MMatrix{NUM_OUTGOING, 3}(
-        α * (r_norm * tr_q[:, XYZ] + b_rq_e * transpose(r[XYZ]))
-    )
+    p_xyz_smatrix = α * (r_norm * tr_q[:, XYZ] + b_rq_e * transpose(r[XYZ]))
+    p_xyz = NO_PHOTON_SORTING ? p_xyz_smatrix : MMatrix(p_xyz_smatrix)
 
     # Sort the output 4-momenta in order of decreasing energy
-    #
-    # FIXME: Make this optional, as in Rust version
-    #
-    for par1=1:NUM_OUTGOING-1, par2=par1+1:NUM_OUTGOING
-        if p_e[par2] > p_e[par1]
-            p_e[par1], p_e[par2] = p_e[par2], p_e[par1]
-            p_xyz[par1, :], p_xyz[par2, :] = p_xyz[par2, :], p_xyz[par1, :]
+    if !NO_PHOTON_SORTING
+        for par1=1:NUM_OUTGOING-1, par2=par1+1:NUM_OUTGOING
+            if p_e[par2] > p_e[par1]
+                p_e[par1], p_e[par2] = p_e[par2], p_e[par1]
+                p_xyz[par1, :], p_xyz[par2, :] = p_xyz[par2, :], p_xyz[par1, :]
+            end
         end
     end
 
-    # Build the final event: incoming momenta + output 4-momenta
+    # Build the final event data: incoming momenta + output 4-momenta
     #
     # FIXME: Discuss with StaticArrays devs why this is 2x faster than the
     #        straightforward `vcat(evgen.incoming_momenta, hcat(p_xyz, p_e))`...
     #
-    res = zeros(MMatrix{NUM_PARTICLES, 4})
-    res[INCOMING, :] = evgen.incoming_momenta
-    res[OUTGOING, XYZ] = p_xyz
-    res[OUTGOING, E] = p_e
-    SMatrix(res)
+    ps = zeros(MMatrix{NUM_PARTICLES, 4})
+    ps[INCOMING, :] = evgen.incoming_momenta
+    ps[OUTGOING, XYZ] = p_xyz
+    ps[OUTGOING, E] = p_e
+    Event(
+        SMatrix(ps),
+        evgen.no_photon_sorting
+    )
 end
 
 end

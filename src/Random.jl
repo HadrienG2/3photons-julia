@@ -58,6 +58,8 @@ function reset!(rng::RanfGenerator)
 end
 
 
+# FIXME: How to express than N should be an Integer? "where N<: Integer" leads
+#        to a method signature mismatch error on the caller's side...
 "Generate a vector of random numbers"
 function random_vector!(rng::RanfGenerator, ::Val{N})::SVector{N, Float} where N
     # Assuming that we will never need more than a round of numbers at a time

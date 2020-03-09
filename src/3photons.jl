@@ -92,8 +92,12 @@ using ..Scheduling: run_simulation
 export main
 
 
+# FIXME: How to specify that NO_PHOTON_SORTING should be a Bool?
 "Artificial function introduced as a performance optimization"
-function main(;jit_warmup::Bool=false)
+function main(
+    no_photon_sorting::Val{NO_PHOTON_SORTING};
+    jit_warmup::Bool=false,
+) where NO_PHOTON_SORTING
     # === CONFIGURATION READOUT ===
 
     # Load the configuration from its file
@@ -120,7 +124,9 @@ function main(;jit_warmup::Bool=false)
     couplings = Couplings(cfg)
 
     # Initialize the event generator
-    evgen = EventGenerator(cfg.e_tot; jit_warmup=jit_warmup)
+    evgen = EventGenerator(cfg.e_tot,
+                           no_photon_sorting;
+                           jit_warmup=jit_warmup)
 
     # === SIMULATION EXECUTION ===
 
@@ -182,9 +188,12 @@ end
 
 using Profile
 
+# Collect "compilation flags" from CLI args
+no_photon_sorting = Val("--no-photon-sorting" in ARGS)
+
 # FIXME: The need for such ceremony to get optimal performance from the main
 #        function and non-noisy profiles is arguably a Julia issue...
-MainModule.main(jit_warmup=true)  # Keep as much JIT as possible out of profiles
+MainModule.main(no_photon_sorting; jit_warmup=true)
 Profile.clear_malloc_data()
-@profile @time MainModule.main()
+@profile @time MainModule.main(no_photon_sorting)
 Profile.print(mincount=130, noisefloor=1.0)  # Ignore <2% + low wrt parent

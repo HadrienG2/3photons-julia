@@ -40,8 +40,8 @@ function keep_event(cut::EventCut, event::Event)::Bool
     end
 
     # Get the incoming electron 4-momentum and outgoing photon 4-momenta
-    p_e₋ = event[INCOMING_E₋, :]
-    ps_out = event[OUTGOING, :]
+    p_e₋ = event.ps[INCOMING_E₋, :]
+    ps_out = event.ps[OUTGOING, :]
 
     # Check if the (beam, photon) angles pass the cut
     cos_nums = ps_out[:, XYZ] * p_e₋[XYZ]

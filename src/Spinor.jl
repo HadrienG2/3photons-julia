@@ -55,12 +55,12 @@ const SpinorProducts = SMatrix{NUM_PARTICLES, NUM_PARTICLES, ComplexF, NUM_PARTI
 function SpinorProducts(event::Event)
     # Compute the spinor products (method from M. Mangano and S. Parke)
     # NOTE: No fancy √ syntax here, for some reason it doesn't compose with '.'
-    xx = sqrt.(event[:, E] + event[:, Z])
+    xx = sqrt.(event.ps[:, E] + event.ps[:, Z])
     fx = @SVector [
         if xx[par] > eps(Float)
-            complex(event[par, X], event[par, Y]) / xx[par]
+            complex(event.ps[par, X], event.ps[par, Y]) / xx[par]
         else
-            Complex(sqrt(2 * event[par, E]))
+            Complex(sqrt(2 * event.ps[par, E]))
         end
         for par=1:NUM_PARTICLES
     ]

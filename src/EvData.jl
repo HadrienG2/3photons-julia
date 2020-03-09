@@ -34,12 +34,14 @@ const NUM_SPINS = 2
 # === EVENT DATA STORAGE ===
 
 # FIXME: Need to specify SMatrix length to avoid type instability in structs?
-"""
-Storage for ee -> ppp event data
+"Storage for ee -> ppp event data"
+struct Event{NO_PHOTON_SORTING}
+    "Matrix of incoming and outgoing 4-momenta"
+    ps::SMatrix{NUM_PARTICLES, 4, Float, NUM_PARTICLES*4}
 
-This is a matrix of incoming and outgoing 4-momenta.
-"""
-const Event = SMatrix{NUM_PARTICLES, 4, Float, NUM_PARTICLES*4}
+    "Disable sorting of photons by energy"
+    no_photon_sorting::Val{NO_PHOTON_SORTING}
+end
 
 "Row of the incoming electron in the event data matrix"
 const INCOMING_E₋ = 1
@@ -57,21 +59,26 @@ const OUTGOING = SVector{NUM_OUTGOING}(NUM_INCOMING+1:NUM_PARTICLES)
 
 
 "Minimal outgoing photon energy"
-function min_photon_energy(event::Event)::Float
+function min_photon_energy(
+    event::Event{NO_PHOTON_SORTING}
+)::Float where NO_PHOTON_SORTING
     # Access photon momenta
-    outgoing_momenta = event[OUTGOING, :]
+    outgoing_momenta = event.ps[OUTGOING, :]
 
-    # Use the fact that photons are sorted by decreasing energy
-    #
-    # FIXME: Revise this code once option to disable sorting returns.
-    #
-    outgoing_momenta[NUM_OUTGOING, E]
+    # Is the sorting of photon by energy enabled?
+    if NO_PHOTON_SORTING
+        # Search for the lowest-energy photon
+        minimum(outgoing_momenta[:, E])
+    else
+        # Use the fact that photons are sorted by decreasing energy
+        outgoing_momenta[NUM_OUTGOING, E]
+    end
 end
 
 
 "Dump 4-momenta of the 3 outgoing photons"
 function Base.show(io::IO, event::Event)
-    p_out = event[OUTGOING, :]
+    p_out = event.ps[OUTGOING, :]
     for coord=1:4
         print(io, coord-1, "\t")
         for part=1:NUM_OUTGOING
