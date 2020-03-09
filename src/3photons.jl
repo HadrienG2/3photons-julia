@@ -89,6 +89,9 @@ using ..Random: RandomGenerator
 using ..ResAcc: integrate_event!, ResultsAccumulator
 using ..Scheduling: run_simulation
 
+# DEBUG
+using InteractiveUtils
+
 export main
 
 
@@ -138,21 +141,31 @@ function main(
     function simulate_events(num_events::UInt,
                              rng::RandomGenerator)::ResultsAccumulator
         # Setup a results accumulator
+        #println("DEBUG: Analyzing ResultsAccumulator setup...")
+        #@code_warntype ResultsAccumulator(cfg, evgen.event_weight)
         res_acc = ResultsAccumulator(cfg, evgen.event_weight)
 
         # Simulate the requested number of events
         for _ = 1:num_events
             # Generate an event
+            #println("DEBUG: Analyzing generate_event!...")
+            #@code_warntype generate_event!(rng, evgen)
             event = generate_event!(rng, evgen)
 
             # If the event passes the cut...
+            #println("DEBUG: Analyzing keep_event...")
+            #@code_warntype keep_event(cfg.event_cut, event)
             if keep_event(cfg.event_cut, event)
                 # Compute the total weight, including matrix elements
+                #println("DEBUG: Analyzing MEsContributions constructor...")
+                #@code_warntype MEsContributions(couplings, event)
                 me_contribs = MEsContributions(couplings, event)
 
                 # NOTE: The original code would display the result here
 
                 # Integrate the event's contribution into the results
+                #println("DEBUG: Analyzing integrate_event!...")
+                #@code_warntype integrate_event!(res_acc, me_contribs)
                 integrate_event!(res_acc, me_contribs)
 
                 # NOTE: The FORTRAN code would fill histograms here
@@ -166,7 +179,7 @@ function main(
     # Run the simulation
     # TODO: Optimize this first
     num_events = jit_warmup ? UInt(1) : cfg.num_events
-    print("DEBUG: Running simulation body... ")
+    println("DEBUG: Running simulation body... ")
     @time result = run_simulation(num_events, simulate_events)
 
     # NOTE: This is where the FORTRAN code would normalize histograms
@@ -200,5 +213,6 @@ no_photon_sorting = Val("--no-photon-sorting" in ARGS)
 #        function and non-noisy profiles is arguably a Julia issue...
 MainModule.main(no_photon_sorting; jit_warmup=true)
 Profile.clear_malloc_data()
+# DEBUG: Bring this back after analysis
 @profile @time MainModule.main(no_photon_sorting)
-Profile.print(mincount=130, noisefloor=1.0)  # Ignore <2% + low wrt parent
+Profile.print(mincount=120, noisefloor=1.0)  # Ignore <2%run_sim + low vs parent
