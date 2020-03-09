@@ -134,7 +134,8 @@ function main(
     This kernel simulates a number of events, given an initial random number
     generator state, and return the accumulated intermediary results.
     """
-    function simulate_events(num_events::UInt, rng::RandomGenerator)::ResultsAccumulator
+    function simulate_events(num_events::UInt,
+                             rng::RandomGenerator)::ResultsAccumulator
         # Setup a results accumulator
         res_acc = ResultsAccumulator(cfg, evgen.event_weight)
 
