@@ -166,7 +166,7 @@ function main(
     # Run the simulation
     # TODO: Optimize this first
     num_events = jit_warmup ? UInt(1) : cfg.num_events
-    print("DEBUG: Running simulation body... ")
+    println("DEBUG: Running simulation body... ")
     @time result = run_simulation(num_events, simulate_events)
 
     # NOTE: This is where the FORTRAN code would normalize histograms
@@ -200,5 +200,6 @@ no_photon_sorting = Val("--no-photon-sorting" in ARGS)
 #        function and non-noisy profiles is arguably a Julia issue...
 MainModule.main(no_photon_sorting; jit_warmup=true)
 Profile.clear_malloc_data()
+# DEBUG: Hide this while dumping code, bring it back after analysis
 @profile @time MainModule.main(no_photon_sorting)
-Profile.print(mincount=130, noisefloor=1.0)  # Ignore <2% + low wrt parent
+Profile.print(mincount=120, noisefloor=1.0)  # Ignore <2%run_sim + low vs parent
