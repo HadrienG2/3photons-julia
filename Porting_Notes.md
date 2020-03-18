@@ -802,9 +802,10 @@ As in other areas of Julia, however, I was a bit saddened by the amount of
 "performance traps" that the StaticArrays exposed:
 
 - It's a shame that slicing on a range of indices that's known at compile-time
-  (e.g. arr[2:4, 3:4]) cannot be optimized out as well as `arr[coord, :]`-style
-  slicing, and weird constructs like `arr[SVector{3}(2:4), SVector{2}(3:4)]` are
-  apparently needed to get good performance out of such slices.
+  (e.g. `arr[2:4, 3:4]`) cannot be optimized out as well as
+  `arr[coord, :]`-style slicing, and that weird constructs like
+  `arr[SVector{3}(2:4), SVector{2}(3:4)]` are apparently needed to get good
+  performance out of such slices.
 - It's sad that the compiler doesn't manager to optimize out the heap
   allocations of mutable array types like `MVector` except in trivial cases
   (e.g. a row swap is all it takes to break optimizations, an hcat/vcat of
