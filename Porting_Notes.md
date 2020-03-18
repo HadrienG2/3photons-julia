@@ -295,7 +295,7 @@ parentheses and commas.
 ---
 
 Second, whitespace as a block delimiter tends to facilitate code typos. For
-example, in Python...
+example, in Python or Nim...
 
 ```python
 if order_given:
@@ -649,7 +649,7 @@ result = if is_normal_case(x, y)
     do_work(x, y)
 else
     SPECIAL_VALUE
-endif
+end
 ```
 
 That pattern happens for many reasons:
