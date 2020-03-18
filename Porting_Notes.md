@@ -808,8 +808,8 @@ As in other areas of Julia, however, I was a bit saddened by the amount of
   performance out of such slices.
 - It's sad that the compiler doesn't manager to optimize out the heap
   allocations of mutable array types like `MVector` except in trivial cases
-  (e.g. a row swap is all it takes to break optimizations, an hcat/vcat of
-  `MMatrix` although the result is immediately converted to `SMatrix`...)
+  (e.g. a row swap is all it takes to break optimizations, as does an hcat/vcat
+  of `MMatrix` although the result is immediately converted to `SMatrix`...)
 - It's ugly that number of matrix elements must be specified _in addition to_
   number of matrix rows and matrix columns in order to avoid type instability
   when StaticArrays are used as struct members.
