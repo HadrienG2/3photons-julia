@@ -88,7 +88,7 @@ context, this means that I am very much a fan of advanced static type systems,
 and more dynamic systems which either catch my mistakes at runtime or don't
 catch them at all will start with a negative apriori from my side.
 
-As a computing engineer, I am ready to dedicate significant time to learning a
+As a software engineer, I am ready to dedicate significant time to learning a
 new technology, so I am less sensitive to "how quickly can I learn X" concerns
 than many others will.
 
