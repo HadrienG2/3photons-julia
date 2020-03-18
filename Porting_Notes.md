@@ -277,34 +277,47 @@ But then everyday experience with using languages that made this design choice
 taught me that whitespace as a delimiter brings with it many papercuts that
 cause everyday pain to practicioners, a pain which feels greater than the
 benefit of eliminating the one-time cost of learning to correctly spell
-expression delimiters as a beginner:
+expression delimiters as a beginner. Let me spell out some of its problems.
 
-- Whitespace as a function/macro argument separator makes any nontrivial
-  expression ambiguous.
-    * For example, in `@something a b + c`, it's not immediately obvious to a
-      normal reader whether `@something` takes two arguments `(a, (b + c))` or
-      four arguments `(a, b, +, c)`.
-    * I know that the grammar is not ambiguous in a literal sense. In the end,
-      operator precedence rules will decide what the implementation will do.
-      What I'm saying is that whitespace as an argument separator makes it
-      trivial to write code that is hard for human to read, unlike more explicit
-      separators like parentheses and commas.
-- Whitespace as a block delimiter facilitates code typos.
-    * For example, in Python...
- ```python
+---
+
+First, whitespace as a function/macro argument separator makes any nontrivial
+expression ambiguous. For example, in `@something a b + c`, it's not immediately
+obvious to a reader with a normal mind whether `@something` takes two arguments
+`(a, (b + c))` or four arguments `(a, b, +, c)`.
+
+I know that the grammar is not ambiguous in a literal sense. In the end,
+operator precedence rules will decide what the implementation will do. What I'm
+saying is that whitespace as an argument separator makes it trivial to write
+code that is hard for human to read, unlike more explicit separators like
+parentheses and commas.
+
+---
+
+Second, whitespace as a block delimiter tends to facilitate code typos. For
+example, in Python...
+
+```python
 if order_given:
     load_missile()
 launch_missile()
 ```
-      ...may not do what the author expected, and may be hard to spot in the
-      messy identation style of inexperienced beginners (for the benefit of whom
-      we're enduring all this extra parser complexity to begin with!).
-    * I believe that Julia is immune to this problem, however, by virtue of
-      mandating line feeds after conditionals in control flow expressions and
-      explicit `end` delimiters to terminate blocks.
-- Whitespace as a statement delimiter forces complex expressions to be broken on
-  awkward boundaries.
-    * For example, compare this expression...
+
+...may not do what the author expected, and may be hard to spot in the
+messy identation style of inexperienced beginners (for the benefit of whom
+we're enduring all this extra parser complexity to begin with!).
+
+I believe that Julia is immune to this problem, however, by virtue of
+mandating line feeds after conditionals in control flow expressions and
+explicit `end` delimiters to terminate blocks.
+
+---
+
+Finally, whitespace as a statement delimiter forces complex expressions to be
+broken on awkward boundaries. For example, consider the following expression,
+assuming that `a`, `b`, `c` etc. are actually big math expressions for which
+a line break is warranted...
+
 ```julia
 (a +
  b -
@@ -315,7 +328,9 @@ launch_missile()
  g +
  h)
 ```
-      ...with this one...
+
+...and now, compare with this style:
+
 ```c
 (a
  + b
@@ -326,9 +341,9 @@ launch_missile()
    - g
    + h)
 ```
-    * The latter style is, in my biased opinion, easier to read than the former.
-      But unfortunately, enforcing whitespace as a statement delimiter makes
-      this style illegal under the language's grammar...
+The latter style is, in my biased opinion, much easier to read than the former.
+But unfortunately, enforcing whitespace as a statement delimiter makes this
+style illegal under the language's grammar...
 
 ### Macro syntax inconsistency
 
