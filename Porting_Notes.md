@@ -97,7 +97,7 @@ proper code/data separation and version control), and averse to interactive
 workflows like REPLs or notebooks. So I will only use the latter for quick
 checks and where necessity dictates (as when e.g. installing packages in Julia),
 which I think does not do full justice to the great work that the Julia
-community has done in this area, and my workflow may instead stress unusual and
+community has done in this area. My workflow may instead stress unusual and
 underdeveloped aspects of the language and its implementation.
 
 As a performance engineer, I tend to have a very severe opinion of any
@@ -105,7 +105,7 @@ programming language which doesn't perform as well as has been proven possible
 in another language, with double negative points if the implementation gets in
 my way as I try to understand the origin of the difference and bridge the gap
 through optimization. This thinking is part of what got me interested in Julia
-over the current Python statu quo, but it can also work in Julia's disfavor as
+over the current Python statu quo, but it can also work in Julia's disfavor when
 some of its dynamic features prevent it from reaching the same level of
 automatic optimization and performance ergonomics that its statically typed and
 AoT-compiled cousins enjoy.
@@ -149,13 +149,12 @@ very hard to use, both for learning purposes and as a reference, because :
       subject matter very problematic. It could be better to have, for example,
       a beginner tutorial where everything is lightly touched upon, followed by
       an advanced tutorial where topics that need it are explored in detail.
-- The structure that exists is neither announced at the beginning of a page, nor
-  easily navigable through hyperlinks in the sidebar, which only go through the
-  first level of heading (where each first-level section can span many pages of
-  content).
+- The little structure that exists is neither announced at the beginning of a
+  page, nor easily navigable through hyperlinks in the sidebar, which only go
+  through the first level of headings (which can span many pages of content).
 
-The search bar helps compensate some of these structural deficiencies, but only
-up to a point:
+The search bar helps one work around some of these structural deficiencies, but
+only up to a point:
 
 - Every search query takes uncomfortably long by modern search engine standards.
 - As with all search-based queries, if you don't remember a keyword that is
@@ -194,12 +193,12 @@ Here are some language and community decisions that contribute to this feeling:
   of the time typing the equivalent of a math expression will Just Work, without
   any need for explicit conversions, markers of float-ness (e.g. typing `3. + x`
   instead of `3 + x`) or C-style broken promotion rules that fire too late after
-  some information has been lost (e.g. `1 / 3 * 3` works).
-- While the numerical prefix syntax `3x` initially felt like a gimmick that
-  makes the language grammar needlessly ambiguous (e.g. can you remember in a
-  fraction of a second what `7/8x` does? And if the goal is to look like math,
-  why do I need to write `7x*y` over `7xy`?), I must admit that it does help
-  further reduce syntax noise and "expression width" in many situations though.
+  some information has been lost (e.g. `1 / 3 * 3` returning `0`).
+- The numerical prefix syntax `3x` initially felt like a gimmick that makes the
+  language grammar needlessly ambiguous (e.g. can you remember in a fraction of
+  a second what `7/8x` does? And if the goal is to look like math, why do I need
+  to write `7x*y` over `7xy`?). But after using it, I must admit that it does
+  help reduce syntax noise and expression width in many situations.
 
 All these design touches contribute to making numerical expressions very concise
 and light on syntax noise in the common case, which makes the mathematical
@@ -234,12 +233,13 @@ was almost extinct, and thus keep this mess alive for future generations.
 
 And no, allowing user-defined indexing conventions is not the answer. The only
 thing this language feature achieves is to make array indexing code almost
-impossible to write correctly, as devs will work with 1-based arrays most of the
-time and never test their code against arrays with other indexing bases.
+impossible to write correctly, as devs will work with 1-based arrays 99.9% of
+the time and never remember to test their code against arrays that use other
+indexing bases.
 
-Still on the matter of indexing, it feels strange that arrays are indexed with
-`Int`, and not by `UInt`, given that Julia does not use negative indexing like
-e.g. Python does (which is for the best, don't get me wrong).
+Still on the matter of indexing, it also feels strange that arrays are indexed
+with `Int`, and not by `UInt`, given that Julia does not use negative indexing
+like e.g. Python does (which is for the best, don't get me wrong).
 
 It seems to me that this is a sad byproduct of another Julia design decision,
 which I already lamented above, that made integer literals typed instead of
@@ -308,8 +308,8 @@ messy identation style of inexperienced beginners (for the benefit of whom
 we're enduring all this extra parser complexity to begin with!).
 
 I believe that Julia is immune to this problem, however, by virtue of
-mandating line feeds after conditionals in control flow expressions and
-explicit `end` delimiters to terminate blocks.
+strongly favoring line feeds after conditionals in control flow expressions and
+mandating explicit `end` block terminators.
 
 ---
 
@@ -376,8 +376,8 @@ these constructs are introduced in the official documentation :
       Hacks similar to the `#ifndef BLAH/#define BLAH/#endif` triad can probably
       be applied in Julia too. But one would have thought that 50 years after C
       was designed, programming language designers should have finally learned
-      that textual inclusion makes a very poor module system.
-    * Further, the C header system has several known problems which Julia is
+      that textual inclusion makes a very poor dependency tracking system.
+    * Further, the C header system has several other problems which Julia is
       prone to experience, such as "implicit" inclusion of a module by a
       virtue of this module being ordered earlier in the final `#include` list.
 - The package system documentation, which is mostly featured in the somewhat
@@ -550,17 +550,17 @@ names as named arguments, could also be automatically generated :
 - Absence of named arguments greatly increase the odds of a common code typo
   where struct fields are listed in the wrong order during constructor call.
 
-TL;DR: Struct constructors with named fields have some advantages, which for
-some people are worth the trouble of typing field names in constructor calls. It
-would be nice if this were natively supported by the language.
+To summarize, struct constructors with named fields have some advantages, which
+for some people are worth the trouble of typing field names in constructor
+calls. It would be nice if this were natively supported by the language.
 
 ### Functional-first design tradeoffs
 
 I appreciate the care that has been taken to make the functional programming
 style ergonomic and performant in Julia, as I feel it is often the right default
 for numerics code. However, this should not come at the expense of making
-imperative style harder to write and less performants, as currently happens
-due to a combination of...
+imperative style harder to write and less performant, as currently happens due
+to a combination of...
 
 - Structs being immutable by default (as opposed to being mutable but normally
   passed by read-only _references_ or _bindings_, as in e.g. Rust).
@@ -616,7 +616,7 @@ As someone whose main programming languages are C++ and Rust, I miss switch
 statements in general, and ML-style exhaustive pattern matching in particular.
 
 It feels wrong to type in long elif sequences, and have them terminated with an
-`else` that throws an expression because without that I have no way to know when
+`else` that throws an exception because without that I have no way to know when
 I messed up consistency between the enum declaration and my switch statement.
 
 ### Callable typing constraints?
@@ -642,7 +642,7 @@ hassle of manually running `@code_warntype` through every function of the hot
 part of your codebase or trying in vain to make sense of `Traceur`'s output.
 
 Due to the peculiarities of mathematics in general and floating point in
-particular, it's not unusal to have code that looks like this:
+particular, it's not unusal in numerics to have code that looks like this:
 
 ```julia
 result = if is_normal_case(x, y)
@@ -788,7 +788,7 @@ of printing to `stdout` or another IO stream via an optional _head_ argument:
 ### StaticArrays thoughts
 
 I was intrigued to see how Julia would handle fixed-sized matrices, as
-experiments with other programming languages (Eigen in C++, nalgebra in Rust...)
+experience with other programming languages (Eigen in C++, nalgebra in Rust...)
 told me that implementing fixed-sized matrices in a language that doesn't have
 built-in support for it can be trickier than it sounds.
 
@@ -799,7 +799,7 @@ heap allocations in the MC simulation kernels (at a fraction of a µs per
 iteration, the allocation loop cannot affort much of it).
 
 As in other areas of Julia, however, I was a bit saddened by the amount of
-"performance traps" that the StaticArrays exposed:
+"performance traps" that StaticArrays exposed:
 
 - It's a shame that slicing on a range of indices that's known at compile-time
   (e.g. `arr[2:4, 3:4]`) cannot be optimized out as well as
@@ -1105,10 +1105,11 @@ compiler engineer, and that's mostly speculation.
 What I did observe, however, is that manual inlining with `@inline` has
 surprising ramifications. For example, I once observed a case where inlining a
 method led `@code_native` to report an indirect call to an anonymous Julia
-method (something like `julia_#2`, rather than a name which was clearly
-correlated to a name in my code base). And in another situation, inlining led to
-a method performing new memory allocations, presumably because the compiler
-didn't manage to optimize out an allocation which it managed to optimize before.
+method (something like `julia_#2`, rather than a symbol name which was clearly
+correlated to a method name in my code base). And in another situation, inlining
+led to a method performing new memory allocations, presumably because the
+compiler didn't manage to optimize out an allocation which it managed to
+optimize before... for some reason.
 
 Those symptoms might be related to the fact that function calls are a code
 specialization boundary in Julia, if specialization occurs after inlining rather
