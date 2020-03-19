@@ -1131,7 +1131,7 @@ To answer this question, let's quickly go over my main areas of interest again:
   it in the hands of my less technically-minded colleagues.
 - Syntax was a mixed bag, with a lot of good ideas and a fair number of equally
   bad ideas. Overall, Julia succeeds at its somewhat unique goal of looking more
-  like math than any other language I've tried, but it does feels carelessly
+  like math than any other language I've tried, but it does feel carelessly
   designed in other places compared with other contemporary programming
   languages. Nothing feels downright terrible though.
 - I feel that programming in the large is a major weak point of Julia as of
