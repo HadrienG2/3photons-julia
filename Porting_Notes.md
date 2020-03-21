@@ -1169,12 +1169,11 @@ To answer this question, let's quickly go over my main areas of interest again:
       would benefit from a recursive mode, and profiling tools would benefit
       from a deep user interface rework.
 
-So overall...
+So overall, my impression from this little porting exercise is that Julia lives
+up well to its promise of providing much better performance than Python given
+equal development effort, but not to its promise of being competitive with
+"static" languages to the point of making use of said languages unnecessary:
 
-- I think that Julia lives up well to its promise of providing much better
-  performance than Python given equal development effort, but not to its promise
-  of being competitive with "static" languages on the performance front to the
-  point of making use of said languages unnecessary.
 - I can see why someone would use Julia over Python in interactive use cases
   like notebooks and REPL, but the language manual and ecosystem documentation
   need to improve significantly before I can personally recommend the language
