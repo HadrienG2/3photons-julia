@@ -282,9 +282,12 @@ expression delimiters as a beginner. Let me spell out some of its problems.
 ---
 
 First, whitespace as a function/macro argument separator makes any nontrivial
-expression ambiguous. For example, in `@something a b + c`, it's not immediately
-obvious to a reader with a normal mind whether `@something` takes two arguments
-`(a, (b + c))` or four arguments `(a, b, +, c)`.
+expression ambiguous. For example, in `@something a b + c`, it is not
+immediately obvious to a reader with a normal mind whether...
+
+* `@something` takes two arguments `(a, (b + c))`?
+* `@something` takes four arguments `(a, b, +, c)`?
+* `@something` takes two arguments `(a, b)`, and its result is summed with `c`?
 
 I know that the grammar is not ambiguous in a literal sense. In the end,
 operator precedence rules will decide what the implementation will do. What I'm
