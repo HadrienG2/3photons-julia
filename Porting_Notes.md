@@ -31,7 +31,7 @@ programming language and taking notes in the process.
 generates many random occurences of a certain physical process of interest, then
 uses these random data points to approximately integrate some physical
 quantities which characterize that process, such as its cross-section
-(like a probability of occurence, but without experimental setup effects).
+(like a probability of occurence, but with minimal experimental setup effects).
 
 This simulation, which was initially developed by my colleague Vincent Lafage as
 part of his PhD work, has several characteristics that make it interesting as a
@@ -125,7 +125,7 @@ occasionally misattribute Julia blame for something which is squarely the fault
 of StaticArrays, even though I took some care to put credit and blame where it's
 due on this front.
 
-Now that his is out of the way, without more ado, let's go into my notes.
+Now that this is out of the way, without more ado, let's go into my notes.
 
 
 ## Documentation
@@ -139,7 +139,7 @@ very hard to use, both for learning purposes and as a reference, because :
 - It lacks structure. It is not unusual for a single section to be several pages
   long without any subsection. This makes it hard to interrupt reading and
   resume it later, or to find back an information that you read in the past.
-    * Reference pages are especially bad in this respect, there are often just
+    * Reference pages are especially bad in this respect, they are often just
       very long lists of methods with links to the source code, with low visual
       separation between individual method entries.
 - It lacks consistency. Each page feels like it was written by its own author in
@@ -151,7 +151,7 @@ very hard to use, both for learning purposes and as a reference, because :
       an advanced tutorial where topics that need it are explored in detail.
 - The little structure that exists is neither announced at the beginning of a
   page, nor easily navigable through hyperlinks in the sidebar, which only go
-  through the first level of headings (which can span many pages of content).
+  through the first level of headings (that can span many pages of content).
 
 The search bar helps one work around some of these structural deficiencies, but
 only up to a point:
@@ -160,8 +160,8 @@ only up to a point:
 - As with all search-based queries, if you don't remember a keyword that is
   clearly associated with the concept you have in mind, you are out of luck.
 - Some search terms can yield many different results, and the search result page
-  does not do a very good job at explaining why a specific query matches in a
-  specific area. Some small quotes with search term highlighting, as e.g.
+  does not do a very good job at explaining why a specific query matches a
+  specific page. Some small quotes with search term highlighting, as e.g.
   Google and DuckDuckGo do, could help greatly here.
 
 Third-party documentation sources like the ["Introducing Julia" wikibook](
@@ -304,7 +304,7 @@ launch_missile()
 ```
 
 ...may not do what the author expected, and may be hard to spot in the
-messy identation style of inexperienced beginners (for the benefit of whom
+messy indentation style of inexperienced beginners (for the benefit of whom
 we're enduring all this extra parser complexity to begin with!).
 
 I believe that Julia is immune to this problem, however, by virtue of
@@ -485,8 +485,8 @@ programming language features interact with another. Here's my take:
       cannot count on the receiver to act as a context disambiguator as in
       single-dispatch language. For example, `event_cut.keep(event)` is easily
       understandable to any HEP Monte Carlo expert, while
-      `keep(event_cut, event)` feels insufficiently clear and one feels the need
-      for a more verbose `keep_event(event_cut, event)`.
+      `keep(event_cut, event)` feels insufficiently clear, instead encouraging
+      use of more verbose method names like `keep_event(event_cut, event)`.
     * It means that methods that implement interactions between two types of
       object have _even less_ of a natural place to go to than in
       single-dispatch languages. Should they be defined in the module where the
@@ -520,7 +520,7 @@ contradicts my understanding here would be much appreciated.
 
 It is somewhat sad that in Julia, modules and types are expected to follow the
 same CamelCase naming convention, but a module cannot bear the same name as an
-inner struct (as it will lead a constant redefinition error).
+inner struct (as doing so will trigger a constant redefinition error).
 
 When a module is 100% dedicated to implementing a single complex type, as is
 often the case, it would be tempting to name it in the same way as the type that
@@ -547,7 +547,7 @@ names as named arguments, could also be automatically generated :
 - Usage of named arguments makes the codebase more robust in the face of future
   evolution, where seemingly innocent refactorings that put struct fields in
   a more logical order (or in alphabetical order) can break callers.
-- Absence of named arguments greatly increase the odds of a common code typo
+- Absence of named arguments greatly increases the odds of a common code typo
   where struct fields are listed in the wrong order during constructor call.
 
 To summarize, struct constructors with named fields have some advantages, which
@@ -565,7 +565,7 @@ to a combination of...
 - Structs being immutable by default (as opposed to being mutable but normally
   passed by read-only _references_ or _bindings_, as in e.g. Rust).
 - Mutable structs being allocated on the heap unless the compiler manages to
-  avoid it, which has serious performance implications.
+  elide the allocation, which has serious performance implications.
 - Structs being often defined in two closely related mutable and immutable
   versions, like e.g. `MVector` and `SVector` in StaticArrays, which leads to
   much code/API duplication and, again, longer explicit imports.
@@ -616,8 +616,9 @@ As someone whose main programming languages are C++ and Rust, I miss switch
 statements in general, and ML-style exhaustive pattern matching in particular.
 
 It feels wrong to type in long elif sequences, and have them terminated with an
-`else` that throws an exception because without that I have no way to know when
-I messed up consistency between the enum declaration and my switch statement.
+`else` that throws an exception, just because without that I would have no way
+to know when I messed up consistency between the enum declaration and my poor
+man's switch statement.
 
 ### Callable typing constraints?
 
@@ -661,7 +662,7 @@ That pattern happens for many reasons:
 - Genuine discontinuity in the mathematical behavior of the computation under
   study, as in e.g. step functions or absolute values.
 
-But in Julia it's all too easy to get it wrong, as it's a situation where the
+But in Julia it's all too easy to get it wrong, as this is a situation where the
 language's extremely well thought-out integer-to-float promotion rules, which
 make use of integers in place of floats a non-issue most of the time, come back
 to bite us. For example, this is type-unstable and slow:
@@ -742,10 +743,10 @@ syntax, even though that choice was most likely rather motivated by dynamic
 dispatch considerations.
 
 However, this lack of OO module structuration does tend to negatively impact
-documentation, since many modules feel like a huge unsorted heap of method. More
-tools should probably be provided to package authors so that they can make their
-automatically generated docs easier to navigate by structuring their method list
-better.
+documentation, since the documentation of many modules feels like a huge
+unsorted heap of method as a result. More tools should probably be provided to
+package authors, so that they can make their automatically generated docs easier
+to navigate by structuring their method list better.
 
 ### Text output formatting control
 
@@ -754,7 +755,7 @@ Custom text output formatting was a surprisingly low point of this project.
 - Apparently, `@printf` is the only available tool for this purpose in the
   standard library. But its C-ish formatting DSL feels totally out of place in
   Julia code, and it does not even provide full feature compatibility with
-  advanced features of the C printf function, such as dynamic width and number
+  advanced features of the C `printf` function, such as dynamic width and number
   precision specifiers.
     * This particular absence would make it a headache to write a program that
       can switch between various floating-point precisions and prints the right
@@ -762,8 +763,8 @@ Custom text output formatting was a surprisingly low point of this project.
       that `3photons-julia` would need for feature-parity with the Rust version.
 - I saw the [Formatting](https://github.com/JuliaIO/Formatting.jl) package
   being sometimes recommended as an alternative, but unfortunately it did not
-  impress. Its documentation can be summarized as "just type in a valid Python
-  format string and it should work", and that's clearly false:
+  impress me. Its documentation can be summarized as "just type in a valid
+  Python format string and it should work", and that's clearly false:
     * `g` formatting is not supported. That's documented, but a big issue in
       scientific computations.
     * Padding is not supported. That's not documented, and a big issue when
@@ -778,8 +779,8 @@ Custom text output formatting was a surprisingly low point of this project.
 I'm not sure if I'm sold on println's design decision of handling the decision
 of printing to `stdout` or another IO stream via an optional _head_ argument:
 
-- It's at odds with the usual convention of putting optional arguments at the
-  tail of the argument list.
+- It is at odds with the usual convention of putting optional arguments at the
+  tail of a function's argument list.
 - Using the same function name for `stdout` and file output makes it somewhat
   too easy to accidentally print to `stdout` by forgetting the stream input.
     * On the other hand, these sorts of errors should be relatively easy to
@@ -806,15 +807,15 @@ As in other areas of Julia, however, I was a bit saddened by the amount of
   `arr[coord, :]`-style slicing, and that weird constructs like
   `arr[SVector{3}(2:4), SVector{2}(3:4)]` are apparently needed to get good
   performance out of such slices.
-- It's sad that the compiler doesn't manager to optimize out the heap
-  allocations of mutable array types like `MVector` except in trivial cases
-  (e.g. a row swap is all it takes to break optimizations, as does an hcat/vcat
-  of `MMatrix` although the result is immediately converted to `SMatrix`...)
+- It's sad that the compiler doesn't manage to optimize out the heap allocations
+  of mutable array types like `MVector` except in trivial cases (e.g. a row swap
+  is all it takes to break optimizations, as does an hcat/vcat of `MMatrix`
+  although the result is immediately converted to `SMatrix`...)
 - It's ugly that number of matrix elements must be specified _in addition to_
   number of matrix rows and matrix columns in order to avoid type instability
   when StaticArrays are used as struct members.
-- The docs could provide more advice on these performance traps and the ways in
-  which one can avoid them.
+- The docs could arguably provide more advice on these performance traps and the
+  ways in which one can avoid them.
 
 ### The mutation_bang_suffix! API convention
 
@@ -867,7 +868,7 @@ manual:
       specialized (and therefore more performance) code.
     * You may need to manually inline a method into another because the
       compiler's current inlining heuristics are very conservative and the
-      `@inline` annotation has strange side-effects like causing allocations.
+      `@inline` annotation has strange side-effects (discussed below).
     * As mentioned, the performance ergonomics of closures are rather low.
 - The fact that modules act as a precompilation boundary leads to [scary and
   unexpected cognitive burden](
@@ -1176,7 +1177,7 @@ So overall...
   point of making use of said languages unnecessary.
 - I can see why someone would use Julia over Python in interactive use cases
   like notebooks and REPL, but the language manual and ecosystem documentation
-  needs to improve significantly before I can personally recommend the language
+  need to improve significantly before I can personally recommend the language
   to colleagues for this purpose.
 - I think that Julia, in its current state at least, is not yet a solid
   contender to statically typed and AoT-compiled languages for writing
